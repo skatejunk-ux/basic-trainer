@@ -6,6 +6,7 @@ import {
   applyRemainingOrder,
   buildRows,
   displayName,
+  estimateMinutes,
   formatClock,
   formatPrevious,
   summarizeSets,
@@ -142,5 +143,21 @@ describe('summarizeSets', () => {
     expect(summarizeSets([l(38.5, 11, 'R', false, 1), l(36.5, 11, 'L', false, 2), l(36.5, 10, 'L', false, 3)])).toBe(
       'L 36,5 kg: 11/10 · R 38,5 kg: 11',
     );
+  });
+});
+
+describe('estimateMinutes', () => {
+  const byId = Object.fromEntries(SEED_EXERCISES.map((e) => [e.id, e]));
+  it('telt sets, rust, omstellen en cardio mee', () => {
+    const t: Template = { id: 't', name: 'T', order: 0, items: [item] };
+    // 4 sets × 45 s + 3 × 120 s rust + 90 s omstellen = 630 s ≈ 10 min
+    expect(estimateMinutes(t, byId)).toBe(10);
+  });
+  it('geeft voor de standaardtrainingen een realistische duur', () => {
+    for (const t of SEED_TEMPLATES) {
+      const min = estimateMinutes(t as Template, byId);
+      expect(min).toBeGreaterThanOrEqual(45);
+      expect(min).toBeLessThanOrEqual(110);
+    }
   });
 });

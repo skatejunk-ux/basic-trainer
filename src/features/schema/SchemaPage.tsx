@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Exercise, Template } from '../../types';
 import { createTemplate, listExercises, listTemplates, seedIfEmpty } from '../../db';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { MuscleMap } from '../../illustration/MuscleMap';
 import { sortBySeed } from './helpers';
@@ -40,25 +41,25 @@ export function SchemaPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="text-2xl font-bold">{nl.pages.schema.title}</h1>
+      <h1 className="text-3xl font-bold">{nl.pages.schema.title}</h1>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{t.trainings}</h2>
+        <h2 className="eyebrow mb-2">{t.trainings}</h2>
         <ul className="space-y-2">
           {templates.map((tp) => (
             <li key={tp.id}>
               <Link
                 to={`/schema/${tp.id}`}
-                className="flex min-h-touch items-center gap-3 rounded-2xl bg-surface p-4 active:bg-surface-2"
+                className="card flex min-h-touch items-center gap-3 p-4 active:bg-surface-2"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-xl font-bold text-accent-fg">
-                  {tp.name}
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-xl font-extrabold text-accent-fg">
+                  {tp.name.slice(0, 2)}
                 </span>
                 <span className="flex-1">
                   <span className="block font-semibold">{t.training(tp.name)}</span>
                   <span className="block text-sm text-muted">{t.count(tp.items.length)}</span>
                 </span>
-                <span className="text-muted">›</span>
+                <Icon name="chevron-right" className="h-5 w-5 text-muted" />
               </Link>
             </li>
           ))}
@@ -69,13 +70,13 @@ export function SchemaPage() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{t.exercises}</h2>
+        <h2 className="eyebrow mb-2">{t.exercises}</h2>
         <ul className="grid grid-cols-2 gap-2">
           {exercises.map((ex) => (
             <li key={ex.id}>
               <Link
                 to={`/oefening/${ex.id}`}
-                className="flex h-full flex-col items-center gap-1 rounded-2xl bg-surface p-3 text-center active:bg-surface-2"
+                className="card flex h-full flex-col items-center gap-1 p-3 text-center active:bg-surface-2"
               >
                 <MuscleMap map={ex.muscleMap} size="sm" showLegend={false} />
                 <span className="text-sm font-semibold leading-tight">{ex.name}</span>

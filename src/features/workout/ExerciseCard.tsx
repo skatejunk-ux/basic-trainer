@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { TemplateItem } from '../../types';
 import { BACK_EXTENSION_TYPE_KEY } from '../../types';
 import { backExtensionType, coachText, DEFAULT_CARDIO_PLAN, formatKg, resolveIncrement } from '../../coach';
+import { Icon, type IconName } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { MuscleMap } from '../../illustration/MuscleMap';
 import { MiniCartoon } from '../../animation/MachineCartoon';
@@ -57,7 +58,7 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
           type="button"
           onClick={() => setShowHow(true)}
           aria-label={`${t.howTo}: ${exercise.name}`}
-          className="flex shrink-0 items-center gap-1 rounded-xl bg-surface p-1"
+          className="card flex shrink-0 items-center gap-1 p-1"
         >
           <MuscleMap map={exercise.muscleMap} size="xs" showLegend={false} />
           <MiniCartoon exercise={exercise} sceneId={bench ? 'back-extension-bench' : undefined} />
@@ -69,8 +70,12 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
               ? `${item.cardio?.minutes ?? DEFAULT_CARDIO_PLAN.minutes} min`
               : `${item.sets} × ${item.repMin}–${item.repMax}${exercise.unilateral ? ' per been' : ''} · rust ${item.restSec} s`}
           </p>
-          <button type="button" onClick={() => setShowHow(true)} className="mt-1 text-sm font-semibold text-accent">
-            ℹ️ {t.howTo}
+          <button
+            type="button"
+            onClick={() => setShowHow(true)}
+            className="mt-1 inline-flex min-h-[36px] items-center gap-1.5 text-sm font-semibold text-accent"
+          >
+            <Icon name="info" className="h-4 w-4" /> {t.howTo}
           </button>
         </div>
       </header>
@@ -92,12 +97,12 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
             <span className="chip text-muted">{t.settingsEmpty}</span>
           )}
           <span className="chip text-muted">{t.step(formatKg(step))}</span>
-          <span className="text-muted">✎</span>
+          <Icon name="pencil" className="h-4 w-4 text-muted" />
         </button>
       )}
 
       {sug.needsChoice === 'back-extension-type' ? (
-        <div className="rounded-xl border border-accent/50 bg-accent/10 p-4">
+        <div className="card border-accent/50 bg-accent/10 p-4">
           <p className="mb-3 font-semibold">{t.chooseType}</p>
           <div className="flex gap-2">
             {(['machine', 'bench'] as const).map((type) => (
@@ -118,23 +123,28 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
           </div>
         </div>
       ) : (
-        <div className="rounded-xl bg-surface p-3 text-sm">
-          <p className="font-medium">🧠 {sug.reason}</p>
-          {bench && sug.bodyweightStage && sug.bodyweightStage !== 'reps' && (
-            <p className="mt-1 font-semibold text-accent">
-              ⏱ {t.tempoTitle}: {coachText.bodyweightStageLabel(sug.bodyweightStage)}
-            </p>
-          )}
-          {previous && (
-            <p className="mt-1 text-muted">
-              {t.previous}: {previous}
-            </p>
-          )}
+        <div className="card flex gap-3 p-3 text-sm">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
+            <Icon name="sparkles" className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1 self-center">
+            <p className="font-medium">{sug.reason}</p>
+            {bench && sug.bodyweightStage && sug.bodyweightStage !== 'reps' && (
+              <p className="mt-1 font-semibold text-accent">
+                {t.tempoTitle}: {coachText.bodyweightStageLabel(sug.bodyweightStage)}
+              </p>
+            )}
+            {previous && (
+              <p className="mt-1 text-muted">
+                {t.previous}: {previous}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
       {skipped ? (
-        <div className="rounded-xl border border-border p-4 text-center">
+        <div className="rounded-2xl border border-dashed border-border p-4 text-center">
           <p className="mb-3 text-muted">{t.skipped}</p>
           <button type="button" className="btn-secondary" onClick={() => s.setSkipped(item.id, false)}>
             {t.unskip}
@@ -184,32 +194,26 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
           onClick={onNext ?? onFinish}
           className="flex w-full items-center gap-3 rounded-2xl bg-success px-4 py-3 text-left font-semibold text-bg active:scale-[0.99]"
         >
-          <span className="text-2xl">🎉</span>
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg/15">
+            <Icon name="check" className="h-5 w-5" strokeWidth={3} />
+          </span>
           <span className="flex-1">
             <span className="block">{t.exerciseDone}</span>
             <span className="block text-sm font-medium opacity-80">{nextName ? t.upNext(nextName) : t.allDone}</span>
           </span>
-          <span className="text-xl">→</span>
+          <Icon name="arrow-right" className="h-5 w-5" />
         </button>
       )}
 
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <button type="button" className="btn-secondary" onClick={() => s.moveLater(item.id)}>
-          ⏭ {t.busy}
-        </button>
+      <div className="grid grid-cols-4 gap-2 pt-2">
+        <Action icon="hourglass" label={t.busy} onClick={() => s.moveLater(item.id)} />
         {skipped ? (
           <span />
         ) : (
-          <button type="button" className="btn-secondary" onClick={() => s.setSkipped(item.id, true)}>
-            ↷ {t.skip}
-          </button>
+          <Action icon="skip-forward" label={t.skip} onClick={() => s.setSkipped(item.id, true)} />
         )}
-        <button type="button" className="btn-secondary" onClick={() => setReplaceOpen(true)}>
-          ⇄ {t.replace}
-        </button>
-        <button type="button" className="btn-secondary" onClick={onReorder}>
-          ☰ {t.reorder}
-        </button>
+        <Action icon="swap" label={t.replace} onClick={() => setReplaceOpen(true)} />
+        <Action icon="arrow-up-down" label={t.reorder} onClick={onReorder} />
       </div>
 
       <Sheet title={exercise.name} open={showHow} onClose={() => setShowHow(false)}>
@@ -249,5 +253,19 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
         </ul>
       </Sheet>
     </article>
+  );
+}
+
+/** Secundaire actie onder een oefening: icoon met klein label, rustig zodat de sets de aandacht houden. */
+function Action({ icon, label, onClick }: { icon: IconName; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-center text-[11px] font-medium leading-tight text-muted active:bg-surface-2"
+    >
+      <Icon name={icon} className="h-5 w-5" />
+      {label}
+    </button>
   );
 }

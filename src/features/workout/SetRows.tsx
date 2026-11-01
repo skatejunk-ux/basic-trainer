@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { Feel, SetLog } from '../../types';
 import { formatKg, roundKg } from '../../coach';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { primeAudio } from './device';
 import type { PlannedRow } from './plan';
@@ -29,7 +30,7 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
 
   if (log) {
     return (
-      <li className="rounded-xl border border-success/40 bg-success/10 p-3" data-row={row.key} data-done="true">
+      <li className="rounded-2xl border border-success/40 bg-success/10 p-3" data-row={row.key} data-done="true">
         <div className="flex items-center gap-3">
           <span className="w-24 shrink-0 text-sm font-medium text-muted">{label}</span>
           <span className="flex-1 text-lg font-semibold tabular-nums">
@@ -39,9 +40,9 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
             type="button"
             onClick={() => onUndo(log.id)}
             aria-label={t.undo}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-xl font-bold text-bg"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-bg"
           >
-            ✓
+            <Icon name="check" className="h-6 w-6" strokeWidth={3} />
           </button>
         </div>
         {!row.isWarmup && (
@@ -72,10 +73,10 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
 
   return (
     <li
-      className={`rounded-xl border border-border bg-surface p-3 ${row.isWarmup ? 'opacity-90' : ''}`}
+      className={`card p-3 ${row.isWarmup ? 'opacity-90' : ''}`}
       data-row={row.key}
     >
-      <div className="mb-2 text-sm font-medium text-muted">{label}</div>
+      <div className="eyebrow mb-2">{label}</div>
       <div className="flex items-center gap-2">
         <Stepper
           label={t.weight}
@@ -110,9 +111,9 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
             onDone(parsed, reps);
           }}
           aria-label={`${t.done}: ${label}`}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-2xl font-bold text-accent-fg active:scale-95 disabled:opacity-30"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg shadow-accent/20 active:scale-95 disabled:opacity-30 disabled:shadow-none"
         >
-          ✓
+          <Icon name="check" className="h-7 w-7" strokeWidth={3} />
         </button>
       </div>
     </li>

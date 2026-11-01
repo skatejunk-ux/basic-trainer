@@ -14,15 +14,18 @@ import {
   shareOrDownloadBackup,
 } from '../../db';
 import { nl } from '../../content/nl';
+import { Icon } from '../../components/Icon';
 import { useWorkout } from '../workout/store';
-import { capFirst, displayName, formatDuration, tonnage } from '../workout/plan';
+import { capFirst, displayName, estimateMinutes, formatDuration, tonnage } from '../workout/plan';
 import { ScanButton } from '../scan/ScanButton';
 import { InviteCard } from './InviteCard';
-import { daysSince, sessionsInWeek, weekStreak } from './week';
+import { daysSince, sessionsInWeek, weekDays, weekStreak } from './week';
 
 const t = nl.today;
 const BACKUP_REMIND_DAYS = 14;
 const dayFmt = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'short' });
+const todayFmt = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+const letterFmt = new Intl.DateTimeFormat('nl-NL', { weekday: 'narrow' });
 
 interface Data {
   templates: Template[];
@@ -82,54 +85,86 @@ export function TodayPage() {
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">{nl.pages.today.title}</h1>
-        <ScanButton className="btn-secondary h-12 w-12 text-xl" />
+      <div className="flex items-end justify-between gap-2">
+        <div>
+          <p className="text-sm font-medium text-muted">{capFirst(todayFmt.format(now))}</p>
+          <h1 className="text-3xl font-bold">{nl.pages.today.title}</h1>
+        </div>
+        <ScanButton className="icon-btn border border-border/60 bg-surface text-fg" />
       </div>
 
       <InviteCard />
 
       {data.active ? (
-        <div className="rounded-2xl border border-accent/50 bg-accent/10 p-4">
-          <p className="mb-3">{t.resumeText(templateName(data.active.templateId))}</p>
+        <div className="card border-accent/50 bg-accent/10 p-4">
+          <p className="mb-3 font-medium">{t.resumeText(templateName(data.active.templateId))}</p>
           <button type="button" className="btn-primary w-full text-lg" onClick={() => navigate('/workout')}>
-            ▶ {t.resume}
+            <Icon name="play" className="h-4 w-4" /> {t.resume}
           </button>
         </div>
       ) : (
         <NextTraining data={data} chosen={chosen} onChoose={setChosen} onStart={() => navigate('/workout')} />
       )}
 
-      <div className="flex items-center gap-4 rounded-2xl bg-surface p-4">
-        <WeekRing done={thisWeek} goal={goal} />
-        <div>
+      <div className="card p-4">
+        <div className="flex items-baseline justify-between gap-2">
           <p className="font-semibold">{thisWeek >= goal ? t.weekDone : t.week(thisWeek, goal)}</p>
-          {streak > 1 && <p className="text-sm text-muted">{t.streak(streak)}</p>}
+          <p className="eyebrow">{t.weekLabel}</p>
         </div>
+        <ul className="mt-3 grid grid-cols-7 gap-1 text-center" aria-hidden>
+          {weekDays(data.sessions, now).map((d) => (
+            <li key={d.date.getTime()} className="flex flex-col items-center gap-1">
+              <span className={`text-[11px] font-semibold uppercase ${d.isToday ? 'text-fg' : 'text-muted'}`}>
+                {letterFmt.format(d.date)}
+              </span>
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold tabular-nums ${
+                  d.trained
+                    ? 'bg-accent text-accent-fg'
+                    : d.isToday
+                      ? 'border-2 border-accent/70 text-fg'
+                      : 'bg-surface-2 text-muted'
+                }`}
+              >
+                {d.trained ? <Icon name="check" className="h-4 w-4" strokeWidth={3} /> : d.date.getDate()}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {streak > 1 && <p className="mt-3 text-sm text-muted">{t.streak(streak)}</p>}
       </div>
 
       {last && (
-        <Link to={`/historie/${last.id}`} className="block rounded-2xl bg-surface p-4 active:bg-surface-2">
-          <p className="text-sm uppercase tracking-wide text-muted">{t.last}</p>
-          <p className="font-semibold">
-            {capFirst(t.lastMeta(dayFmt.format(last.startedAt), templateName(last.templateId)))}
-          </p>
-          <p className="text-sm text-muted">
-            {nl.history.meta(
-              formatDuration((last.endedAt ?? last.startedAt) - last.startedAt),
-              data.lastSets.filter((s) => !s.isWarmup).length,
-            )}{' '}
-            · {nl.history.tonnage(formatKg(Math.round(tonnage(data.lastSets))))}
-          </p>
+        <Link to={`/historie/${last.id}`} className="card flex items-center gap-3 p-4 active:bg-surface-2">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-lg font-bold text-accent">
+            {templateName(last.templateId).slice(0, 2)}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="eyebrow block">{t.last}</span>
+            <span className="block truncate font-semibold">
+              {capFirst(t.lastMeta(dayFmt.format(last.startedAt), templateName(last.templateId)))}
+            </span>
+            <span className="block text-sm text-muted">
+              {nl.history.meta(
+                formatDuration((last.endedAt ?? last.startedAt) - last.startedAt),
+                data.lastSets.filter((s) => !s.isWarmup).length,
+              )}{' '}
+              · {nl.history.tonnage(formatKg(Math.round(tonnage(data.lastSets))))}
+            </span>
+          </span>
+          <Icon name="chevron-right" className="h-5 w-5 text-muted" />
         </Link>
       )}
 
       {remindBackup && (
-        <div className="rounded-2xl border border-border bg-surface p-4">
-          <p className="mb-2 text-sm">💾 {backupAge === null ? t.backupNever : t.backupReminder(backupAge)}</p>
+        <div className="card flex items-center gap-3 p-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-muted">
+            <Icon name="download" className="h-[18px] w-[18px]" />
+          </span>
+          <p className="min-w-0 flex-1 text-sm">{backupAge === null ? t.backupNever : t.backupReminder(backupAge)}</p>
           <button
             type="button"
-            className="btn-secondary w-full"
+            className="btn-secondary min-h-[40px] shrink-0 text-sm"
             onClick={async () => {
               const r = await shareOrDownloadBackup();
               if (r !== 'cancelled') setBackupDone(true);
@@ -159,69 +194,66 @@ function NextTraining({
   if (!template) return null;
   const others = data.templates.filter((tp) => tp.id !== template.id);
   return (
-    <div className="rounded-2xl bg-surface p-4">
-      <p className="text-sm uppercase tracking-wide text-muted">{t.next}</p>
-      <h2 className="text-3xl font-bold">{nl.workout.title(template.name)}</h2>
-      <p className="mb-3 text-sm text-muted">{t.exercises(template.items.length)}</p>
-      <ol className="mb-4 space-y-1">
-        {template.items.map((item, i) => {
-          const ex = data.exercises[item.exerciseId];
-          return (
-            <li key={item.id} className="flex items-baseline gap-2 text-sm">
-              <span className="w-5 text-right tabular-nums text-muted">{i + 1}.</span>
-              <span className="flex-1">{displayName(ex, item, nl.workout.warmupCardio)}</span>
-              <span className="text-muted">
-                {ex?.kind === 'cardio'
-                  ? `${item.cardio?.minutes ?? 30} min`
-                  : `${item.sets}×${item.repMin}–${item.repMax}`}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
-      <button
-        type="button"
-        className="btn-primary w-full text-lg"
-        disabled={template.items.length === 0}
-        onClick={async () => {
-          await useWorkout.getState().start(template.id);
-          onStart();
-        }}
-      >
-        ▶ {t.start(template.name)}
-      </button>
-      {others.map((o) => (
-        <button key={o.id} type="button" className="btn-ghost mt-2 w-full" onClick={() => onChoose(o.id)}>
-          {t.other(o.name)}
+    <div className="card relative overflow-hidden p-4">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/15 to-transparent"
+        aria-hidden
+      />
+      <div className="relative">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-2xl font-extrabold text-accent-fg">
+            {template.name.slice(0, 2)}
+          </span>
+          <div className="min-w-0">
+            <p className="eyebrow">{t.next}</p>
+            <h2 className="truncate text-2xl font-bold">{nl.workout.title(template.name)}</h2>
+          </div>
+        </div>
+        <p className="mt-3 flex items-center gap-3 text-sm text-muted">
+          <span className="inline-flex items-center gap-1.5">
+            <Icon name="dumbbell" className="h-4 w-4" />
+            {t.exercises(template.items.length)}
+          </span>
+          {template.items.length > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="clock" className="h-4 w-4" />
+              {t.duration(estimateMinutes(template, data.exercises))}
+            </span>
+          )}
+        </p>
+        <ol className="my-4 divide-y divide-border/50 rounded-xl bg-surface-2/60 px-3">
+          {template.items.map((item, i) => {
+            const ex = data.exercises[item.exerciseId];
+            return (
+              <li key={item.id} className="flex items-baseline gap-2 py-2 text-sm">
+                <span className="w-4 text-right text-xs tabular-nums text-muted">{i + 1}</span>
+                <span className="min-w-0 flex-1 truncate">{displayName(ex, item, nl.workout.warmupCardio)}</span>
+                <span className="tabular-nums text-muted">
+                  {ex?.kind === 'cardio'
+                    ? `${item.cardio?.minutes ?? 30} min`
+                    : `${item.sets}×${item.repMin}–${item.repMax}`}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+        <button
+          type="button"
+          className="btn-primary w-full text-lg"
+          disabled={template.items.length === 0}
+          onClick={async () => {
+            await useWorkout.getState().start(template.id);
+            onStart();
+          }}
+        >
+          <Icon name="play" className="h-4 w-4" /> {t.start(template.name)}
         </button>
-      ))}
+        {others.map((o) => (
+          <button key={o.id} type="button" className="btn-ghost mt-1 w-full text-sm" onClick={() => onChoose(o.id)}>
+            {t.other(o.name)}
+          </button>
+        ))}
+      </div>
     </div>
-  );
-}
-
-function WeekRing({ done, goal }: { done: number; goal: number }) {
-  const r = 22;
-  const c = 2 * Math.PI * r;
-  const pct = Math.min(1, done / goal);
-  return (
-    <svg viewBox="0 0 56 56" className="h-14 w-14 shrink-0" aria-hidden>
-      <circle cx="28" cy="28" r={r} fill="none" stroke="rgb(var(--color-border))" strokeWidth="6" />
-      {pct > 0 && (
-        <circle
-          cx="28"
-          cy="28"
-          r={r}
-          fill="none"
-          stroke={pct >= 1 ? 'rgb(var(--color-success))' : 'rgb(var(--color-accent))'}
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={`${c * pct} ${c}`}
-          transform="rotate(-90 28 28)"
-        />
-      )}
-      <text x="28" y="33" textAnchor="middle" fontSize="15" fontWeight="700" fill="rgb(var(--color-fg))">
-        {done}
-      </text>
-    </svg>
   );
 }

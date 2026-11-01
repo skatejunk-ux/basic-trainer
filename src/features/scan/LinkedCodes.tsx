@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { MachineCode } from '../../types';
 import { linkMachineCode, listMachineCodesByExercise, unlinkMachineCode } from '../../db';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { CameraScanner } from './CameraScanner';
 import { canScan } from './resolve';
@@ -19,7 +20,7 @@ export function LinkedCodes({ exerciseId, exerciseName }: { exerciseId: string; 
   if (!scannable && !codes.length) return null;
 
   return (
-    <div className="rounded-xl bg-surface p-3">
+    <div className="card p-3">
       <h2 className="mb-2 font-semibold">{t.codesTitle}</h2>
       {message && (
         <p role="status" className="mb-2 text-sm font-semibold text-success">
@@ -41,7 +42,7 @@ export function LinkedCodes({ exerciseId, exerciseName }: { exerciseId: string; 
                   reload();
                 }}
               >
-                ✕
+                <Icon name="x" />
               </button>
             </li>
           ))}
@@ -51,7 +52,7 @@ export function LinkedCodes({ exerciseId, exerciseName }: { exerciseId: string; 
       )}
       {scannable && (
         <button type="button" className="btn-secondary w-full" onClick={() => setScanning(true)}>
-          📷 {t.linkHere}
+          <Icon name="scan" /> {t.linkHere}
         </button>
       )}
       {scanning && (

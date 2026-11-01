@@ -1,5 +1,6 @@
 // Full-screen camerascanner met de BarcodeDetector-API (Chrome op Android). Geen extra library.
 import { useEffect, useRef, useState } from 'react';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 
 const t = nl.scan;
@@ -93,8 +94,8 @@ export function CameraScanner({ onDetect, onClose }: Props) {
     <div role="dialog" aria-modal="true" aria-label={t.title} className="fixed inset-0 z-50 flex flex-col bg-black text-white">
       <div className="flex items-center gap-2 px-3 pb-2 pt-[calc(env(safe-area-inset-top)+8px)]">
         <h2 className="flex-1 text-lg font-bold">{t.title}</h2>
-        <button type="button" onClick={onClose} aria-label={t.close} className="btn-ghost w-12 text-xl text-white">
-          ✕
+        <button type="button" onClick={onClose} aria-label={t.close} className="inline-flex h-12 w-12 items-center justify-center rounded-full text-white active:bg-white/10">
+          <Icon name="x" className="h-6 w-6" />
         </button>
       </div>
       <div className="relative flex-1 overflow-hidden">

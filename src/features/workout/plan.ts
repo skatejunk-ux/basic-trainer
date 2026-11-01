@@ -147,3 +147,17 @@ export function formatClock(sec: number): string {
   const s = Math.max(0, Math.ceil(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
+
+const SET_WORK_SEC = 45;
+const SETUP_SEC = 90;
+
+/** Ruwe duur van een training in minuten (sets × (uitvoering + rust) + omstellen + cardio), afgerond op 5. */
+export function estimateMinutes(template: Template, exercises: Record<string, Exercise | undefined>): number {
+  const sec = template.items.reduce((sum, item) => {
+    const ex = exercises[item.exerciseId];
+    if (ex?.kind === 'cardio') return sum + (item.cardio?.minutes ?? 30) * 60;
+    const sets = (item.sets + (item.warmupSet ? 1 : 0)) * (ex?.unilateral ? 2 : 1);
+    return sum + SETUP_SEC + sets * SET_WORK_SEC + Math.max(0, sets - 1) * item.restSec;
+  }, 0);
+  return Math.max(5, Math.round(sec / 300) * 5);
+}

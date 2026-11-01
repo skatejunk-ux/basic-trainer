@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { SetLog } from '../../types';
 import { compareToPrevious, formatKg, sessionEnergy } from '../../coach';
 import { updateSettings } from '../../db';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { displayName, exerciseIdFor, formatDuration, isWarmupCardio, itemsInOrder, tonnage } from './plan';
 import { useWorkout } from './store';
@@ -84,14 +85,20 @@ export function Summary({ onSaved }: { onSaved: () => void }) {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-bold">{t.title}</h1>
+      <div className="flex flex-col items-center pt-2 text-center">
+        <span className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15 text-accent ring-8 ring-accent/5">
+          <Icon name="trophy" className="h-8 w-8" />
+        </span>
+        <h1 className="text-3xl font-bold">{t.title}</h1>
+        <p className="mt-1 text-sm text-muted">{nl.workout.title(s.template.name)}</p>
+      </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <Stat label={t.duration} value={formatDuration(Date.now() - s.session.startedAt)} />
         <Stat label={t.sets} value={String(work.length)} />
         <Stat label={t.tonnage} value={`${formatKg(Math.round(tonnage(s.logs)))} kg`} />
       </div>
       {energy ? (
-        <div className="rounded-xl bg-surface p-3" data-testid="energy">
+        <div className="card p-4" data-testid="energy">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold tabular-nums">≈ {energy.total} kcal</span>
             <span className="text-xs uppercase tracking-wide text-muted">{t.energy}</span>
@@ -107,7 +114,7 @@ export function Summary({ onSaved }: { onSaved: () => void }) {
       )}
       <ul className="space-y-2">
         {lines.map((l) => (
-          <li key={l.id} className="rounded-xl bg-surface p-3">
+          <li key={l.id} className="card p-3">
             <div className="font-semibold">{l.name}</div>
             <div className="text-sm text-muted">{l.detail}</div>
             {l.cheer && <div className="mt-1 text-sm font-semibold text-accent">{l.cheer}</div>}
@@ -148,7 +155,7 @@ function WeightAsk() {
   const valid = value >= 30 && value <= 300;
   return (
     <form
-      className="rounded-xl bg-surface p-3"
+      className="card p-3"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!valid) return;
@@ -175,9 +182,9 @@ function WeightAsk() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-surface p-3">
+    <div className="card px-2 py-3">
       <div className="text-xl font-bold tabular-nums">{value}</div>
-      <div className="text-xs uppercase tracking-wide text-muted">{label}</div>
+      <div className="eyebrow mt-0.5">{label}</div>
     </div>
   );
 }

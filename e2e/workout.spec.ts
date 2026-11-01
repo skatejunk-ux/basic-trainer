@@ -28,7 +28,7 @@ test('volledige training A: loggen, rust, herstel na herladen, afronden', async 
   // Warming-up loggen
   await page.getByRole('button', { name: 'Klaar – opslaan' }).click();
   await expect(page.getByText('Gelogd: 5 min')).toBeVisible();
-  await page.getByRole('button', { name: 'Volgende →' }).click();
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
 
   // Leg Press: eerste keer, gewicht leeg → ✓ uitgeschakeld tot er een gewicht is
   await expect(page.getByRole('heading', { name: 'Seated Leg Press' })).toBeVisible();
@@ -67,7 +67,7 @@ test('volledige training A: loggen, rust, herstel na herladen, afronden', async 
   expect((await vibrations(page)).length).toBe(before);
 
   // Machine bezet: Back Extension gaat naar achteren
-  await page.getByRole('button', { name: 'Volgende →' }).click();
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Back Extension' })).toBeVisible();
   await page.getByRole('button', { name: /Machine bezet/ }).click();
   await expect(page.getByRole('heading', { name: 'Seated Chest Press' })).toBeVisible();
@@ -81,7 +81,7 @@ test('volledige training A: loggen, rust, herstel na herladen, afronden', async 
   // Afronden
   await page.getByRole('button', { name: 'Training sluiten' }).click();
   await page.getByRole('button', { name: 'Afronden en opslaan' }).click();
-  await expect(page.getByRole('heading', { name: 'Goed gedaan! 🎉' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Goed gedaan!' })).toBeVisible();
   await expect(page.getByText('Startgewicht 60 kg op de Seated Leg Press 💪')).toBeVisible();
   await page.getByRole('button', { name: 'Opslaan' }).click();
 

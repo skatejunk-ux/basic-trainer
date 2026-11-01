@@ -15,6 +15,7 @@ import {
 } from '../../db';
 import { formatKg } from '../../coach';
 import { nl } from '../../content/nl';
+import { BackLink } from '../../components/BackLink';
 import { NumberStepper } from '../../components/NumberStepper';
 import { Sheet } from '../../components/Sheet';
 import { SortableList } from '../../components/SortableList';
@@ -79,9 +80,7 @@ export function TemplateEditor() {
 
   return (
     <section className="space-y-4">
-      <Link to="/schema" className="text-sm font-semibold text-accent">
-        {t.back}
-      </Link>
+      <BackLink to="/schema" label={t.back} />
       <label className="block">
         <span className="text-sm font-medium text-muted">{t.name}</span>
         <input

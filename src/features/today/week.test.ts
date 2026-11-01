@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Session } from '../../types';
-import { daysSince, sessionsInWeek, startOfWeek, weekStreak } from './week';
+import { daysSince, sessionsInWeek, startOfWeek, weekDays, weekStreak } from './week';
 
 const at = (y: number, m: number, d: number, h = 12) => new Date(y, m - 1, d, h).getTime();
 const s = (t: number, status: Session['status'] = 'done'): Session => ({
@@ -39,5 +39,15 @@ describe('week', () => {
   it('dagen sinds', () => {
     expect(daysSince(undefined, 0)).toBeNull();
     expect(daysSince(at(2026, 11, 1), at(2026, 11, 15))).toBe(14);
+  });
+});
+
+describe('weekDays', () => {
+  it('geeft ma–zo met getrainde dagen en vandaag', () => {
+    const now = at(2026, 11, 4); // woensdag
+    const days = weekDays([s(at(2026, 11, 2)), s(at(2026, 11, 3), 'abandoned'), s(at(2026, 11, 1))], now);
+    expect(days.map((d) => d.date.getDate())).toEqual([2, 3, 4, 5, 6, 7, 8]);
+    expect(days.map((d) => d.trained)).toEqual([true, false, false, false, false, false, false]);
+    expect(days.findIndex((d) => d.isToday)).toBe(2);
   });
 });

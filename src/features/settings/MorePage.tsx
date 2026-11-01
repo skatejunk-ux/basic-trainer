@@ -10,6 +10,7 @@ import {
   updateSettings,
   type ImportMode,
 } from '../../db';
+import { Icon, type IconName } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { Sheet } from '../../components/Sheet';
 import { applyTheme } from '../../theme';
@@ -57,13 +58,19 @@ export function MorePage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="text-2xl font-bold">{nl.pages.more.title}</h1>
+      <h1 className="text-3xl font-bold">{nl.pages.more.title}</h1>
 
       <Group title={t.workout}>
-        <Switch label={`📳 ${t.vibration}`} on={settings.vibration} onChange={(v) => change({ vibration: v })} />
-        <Switch label={`🔔 ${t.sound}`} on={settings.sound} onChange={(v) => change({ sound: v })} />
         <Switch
-          label={`🔆 ${t.keepScreenOn}`}
+          icon="vibrate"
+          label={t.vibration}
+          on={settings.vibration}
+          onChange={(v) => change({ vibration: v })}
+        />
+        <Switch icon="bell" label={t.sound} on={settings.sound} onChange={(v) => change({ sound: v })} />
+        <Switch
+          icon="sun"
+          label={t.keepScreenOn}
           on={settings.keepScreenOn}
           onChange={(v) => change({ keepScreenOn: v })}
           hint={settings.keepScreenOn ? undefined : t.screenHint}
@@ -126,10 +133,10 @@ export function MorePage() {
               }
             }}
           >
-            💾 {t.export}
+            <Icon name="download" /> {t.export}
           </button>
           <button type="button" className="btn-secondary w-full" onClick={() => fileRef.current?.click()}>
-            📂 {t.import}
+            <Icon name="upload" /> {t.import}
           </button>
           <input
             ref={fileRef}
@@ -149,8 +156,8 @@ export function MorePage() {
       <Group title={t.about}>
         <div className="space-y-2 px-3 py-2 text-sm">
           <p className="text-muted">{t.aboutText}</p>
-          <Link to="/dev/muscles" className="font-semibold text-accent">
-            {t.muscles} →
+          <Link to="/dev/muscles" className="inline-flex items-center gap-1 font-semibold text-accent">
+            {t.muscles} <Icon name="chevron-right" className="h-4 w-4" />
           </Link>
           <p className="text-muted">{t.version(__APP_VERSION__)}</p>
         </div>
@@ -173,18 +180,20 @@ export function MorePage() {
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>
-      <div className="divide-y divide-border rounded-2xl bg-surface">{children}</div>
+      <h2 className="eyebrow mb-2">{title}</h2>
+      <div className="card divide-y divide-border/60">{children}</div>
     </div>
   );
 }
 
 function Switch({
+  icon,
   label,
   on,
   hint,
   onChange,
 }: {
+  icon: IconName;
   label: string;
   on: boolean;
   hint?: string;
@@ -199,14 +208,19 @@ function Switch({
         onClick={() => onChange(!on)}
         className="flex min-h-touch w-full items-center justify-between gap-3 text-left"
       >
-        <span>{label}</span>
+        <span className="flex items-center gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-muted">
+            <Icon name={icon} className="h-[18px] w-[18px]" />
+          </span>
+          {label}
+        </span>
         <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-border'}`}>
           <span
             className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-6' : 'translate-x-1'}`}
           />
         </span>
       </button>
-      {hint && <p className="pb-1 text-xs text-muted">{hint}</p>}
+      {hint && <p className="pb-1 pl-11 text-xs text-muted">{hint}</p>}
     </div>
   );
 }

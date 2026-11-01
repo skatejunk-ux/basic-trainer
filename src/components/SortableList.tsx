@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Icon } from './Icon';
 import { nl } from '../content/nl';
 
 const t = nl.workout;
@@ -93,9 +94,9 @@ function Row({
         {...attributes}
         {...listeners}
         aria-label={`${t.dragHandle}: ${name}`}
-        className="h-12 w-10 shrink-0 touch-none text-xl text-muted"
+        className="flex h-12 w-10 shrink-0 touch-none items-center justify-center text-muted"
       >
-        ☰
+        <Icon name="grip" />
       </button>
       <div className="min-w-0 flex-1">{children}</div>
       <button

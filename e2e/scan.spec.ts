@@ -74,7 +74,7 @@ test('kcal-schatting in de samenvatting na het invullen van je gewicht', async (
   await page.getByRole('button', { name: 'Klaar – opslaan' }).click();
   await page.getByRole('button', { name: 'Training sluiten' }).click();
   await page.getByRole('button', { name: 'Afronden en opslaan' }).click();
-  await expect(page.getByRole('heading', { name: 'Goed gedaan! 🎉' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Goed gedaan!' })).toBeVisible();
 
   await page.getByLabel('Gewicht (kg)').fill('80');
   await page.getByRole('button', { name: 'Bewaar gewicht' }).click();

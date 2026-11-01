@@ -37,3 +37,25 @@ export function weekStreak(sessions: Session[], goal: number, now: number): numb
 export function daysSince(at: number | undefined, now: number): number | null {
   return at === undefined ? null : Math.floor((now - at) / DAY);
 }
+
+export interface WeekDay {
+  date: Date;
+  trained: boolean;
+  isToday: boolean;
+}
+
+/** De zeven dagen (ma–zo) van deze week, met of er die dag een afgeronde training was. */
+export function weekDays(sessions: Session[], now: number): WeekDay[] {
+  const done = sessions.filter((s) => s.status === 'done');
+  const today = new Date(now).toDateString();
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(startOfWeek(now));
+    date.setDate(date.getDate() + i);
+    const key = date.toDateString();
+    return {
+      date,
+      trained: done.some((s) => new Date(s.startedAt).toDateString() === key),
+      isToday: key === today,
+    };
+  });
+}

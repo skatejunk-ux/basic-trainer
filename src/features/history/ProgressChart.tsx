@@ -41,7 +41,7 @@ export function ProgressChart({ series, unit, title }: Props) {
   const multi = series.length > 1;
 
   return (
-    <figure className="rounded-2xl bg-surface p-3">
+    <figure className="card p-3">
       <figcaption className="mb-1 flex items-center justify-between gap-2 text-sm">
         <span className="font-semibold">{title}</span>
         {multi && (

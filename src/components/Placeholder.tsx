@@ -13,10 +13,7 @@ export function Placeholder({ title, text, backTo, backLabel }: Props) {
       <h1 className="text-2xl font-bold">{title}</h1>
       {text && <p className="mt-2 text-muted">{text}</p>}
       {backTo && (
-        <Link
-          to={backTo}
-          className="mt-4 inline-flex min-h-touch items-center rounded-lg bg-accent px-4 font-semibold text-accent-fg"
-        >
+        <Link to={backTo} className="btn-primary mt-4">
           {backLabel}
         </Link>
       )}

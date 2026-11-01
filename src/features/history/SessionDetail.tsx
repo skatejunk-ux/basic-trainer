@@ -12,6 +12,7 @@ import {
 } from '../../db';
 import { formatKg } from '../../coach';
 import { nl } from '../../content/nl';
+import { BackLink } from '../../components/BackLink';
 import { capFirst, displayName, exerciseIdFor, formatDuration, itemsInOrder, tonnage } from '../workout/plan';
 
 const t = nl.history;
@@ -112,11 +113,9 @@ export function SessionDetail() {
 
   return (
     <section className="space-y-4">
-      <Link to="/historie" className="text-sm font-semibold text-accent">
-        {t.back}
-      </Link>
+      <BackLink to="/historie" label={t.back} />
       <div>
-        <h1 className="text-2xl font-bold">{t.training(template?.name ?? '?')}</h1>
+        <h1 className="text-3xl font-bold">{t.training(template?.name ?? '?')}</h1>
         <p className="text-sm text-muted">{capFirst(dateFmt.format(session.startedAt))}</p>
         <p className="mt-1 text-sm text-muted">
           {t.meta(
@@ -128,7 +127,7 @@ export function SessionDetail() {
       </div>
       <ul className="space-y-2">
         {groups.map((g) => (
-          <li key={g.key} className="rounded-2xl bg-surface p-3">
+          <li key={g.key} className="card p-3">
             <Link to={`/oefening/${g.exerciseId}`} className="font-semibold">
               {g.name}
             </Link>
@@ -156,7 +155,7 @@ export function SessionDetail() {
         ))}
       </ul>
       {session.notes && (
-        <div className="rounded-2xl bg-surface p-3">
+        <div className="card p-3">
           <h2 className="text-sm font-semibold">{t.notes}</h2>
           <p className="whitespace-pre-wrap text-sm">{session.notes}</p>
         </div>

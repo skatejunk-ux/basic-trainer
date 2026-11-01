@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import type { Session, SetLog, Template } from '../../types';
 import { db, listSessions, listTemplates } from '../../db';
 import { formatKg } from '../../coach';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { capFirst, formatDuration, tonnage } from '../workout/plan';
 
@@ -34,11 +35,21 @@ export function HistoryPage() {
 
   return (
     <section>
-      <h1 className="text-2xl font-bold">{nl.pages.history.title}</h1>
-      {data.sessions.length === 0 && <p className="mt-2 text-muted">{t.empty}</p>}
+      <h1 className="text-3xl font-bold">{nl.pages.history.title}</h1>
+      {data.sessions.length === 0 && (
+        <div className="card mt-4 flex flex-col items-center gap-3 p-6 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-muted">
+            <Icon name="history" className="h-6 w-6" />
+          </span>
+          <p className="text-muted">{t.empty}</p>
+        </div>
+      )}
       {[...months.entries()].map(([month, sessions]) => (
         <div key={month} className="mt-5">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{month}</h2>
+          <div className="mb-2 flex items-baseline justify-between">
+            <h2 className="eyebrow">{month}</h2>
+            <span className="text-xs text-muted">{t.monthCount(sessions.length)}</span>
+          </div>
           <ul className="space-y-2">
             {sessions.map((s) => {
               const sets = data.sets.filter((l) => l.sessionId === s.id);
@@ -47,7 +58,7 @@ export function HistoryPage() {
                 <li key={s.id}>
                   <Link
                     to={`/historie/${s.id}`}
-                    className="flex items-center gap-3 rounded-2xl bg-surface p-3 active:bg-surface-2"
+                    className="card flex items-center gap-3 p-3 active:bg-surface-2"
                     data-session={s.id}
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-lg font-bold text-accent">
@@ -60,7 +71,7 @@ export function HistoryPage() {
                         {t.tonnage(formatKg(Math.round(tonnage(sets))))}
                       </span>
                     </span>
-                    <span className="text-muted">›</span>
+                    <Icon name="chevron-right" className="h-5 w-5 text-muted" />
                   </Link>
                 </li>
               );

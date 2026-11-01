@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Exercise } from '../../types';
 import { getMachineCode, linkMachineCode, listExercises } from '../../db';
 import { nl } from '../../content/nl';
+import { Icon } from '../../components/Icon';
 import { Sheet } from '../../components/Sheet';
 import { CameraScanner } from './CameraScanner';
 import { canScan, resolveScan, type ScanContext } from './resolve';
@@ -23,7 +24,7 @@ interface Props {
   className?: string;
 }
 
-export function ScanButton({ workout, onGotoItem, className = 'btn-ghost w-12 text-xl' }: Props) {
+export function ScanButton({ workout, onGotoItem, className = 'icon-btn' }: Props) {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>({ kind: 'idle' });
   if (!canScan()) return null;
@@ -54,7 +55,7 @@ export function ScanButton({ workout, onGotoItem, className = 'btn-ghost w-12 te
   return (
     <>
       <button type="button" onClick={() => setStep({ kind: 'scanning' })} aria-label={t.button} className={className}>
-        📷
+        <Icon name="scan" className="h-[22px] w-[22px]" />
       </button>
       {step.kind === 'scanning' && <CameraScanner onDetect={(c, f) => void onDetect(c, f)} onClose={close} />}
       <Sheet title={t.pickTitle} open={step.kind === 'pick'} onClose={close}>

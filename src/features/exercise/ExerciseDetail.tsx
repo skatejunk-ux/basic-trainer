@@ -13,6 +13,7 @@ import {
 } from '../../db';
 import { formatKg, resolveIncrement } from '../../coach';
 import { nl } from '../../content/nl';
+import { BackLink } from '../../components/BackLink';
 import { MuscleMap } from '../../illustration/MuscleMap';
 import { ExerciseInstructions, SettingsForm } from '../../components/exercise/ExerciseInfo';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -88,10 +89,8 @@ export function ExerciseDetail() {
 
   return (
     <section className="space-y-4">
-      <button type="button" onClick={() => navigate(-1)} className="text-sm font-semibold text-accent">
-        {t.back}
-      </button>
-      <h1 className="text-2xl font-bold">{exercise.name}</h1>
+      <BackLink label={t.back} />
+      <h1 className="text-3xl font-bold">{exercise.name}</h1>
       <div role="tablist" className="grid grid-cols-3 gap-1 rounded-xl bg-surface p-1">
         {(['info', 'settings', 'history'] as const).map((k) => (
           <button
@@ -209,12 +208,12 @@ function HistoryTab({ data }: { data: Data }) {
           title={isCardio ? nl.exercise.chartCardio : nl.exercise.chartTitle}
         />
       ) : (
-        <p className="rounded-xl bg-surface p-3 text-sm text-muted">{nl.exercise.chartEmpty}</p>
+        <p className="card p-3 text-sm text-muted">{nl.exercise.chartEmpty}</p>
       )}
       <ul className="space-y-2">
         {rows.map(([sessionId, r]) => (
           <li key={sessionId}>
-            <Link to={`/historie/${sessionId}`} className="block rounded-xl bg-surface p-3 active:bg-surface-2">
+            <Link to={`/historie/${sessionId}`} className="card block p-3 active:bg-surface-2">
               <span className="block text-sm font-semibold">{capFirst(dateFmt.format(r.at))}</span>
               <span className="block text-sm tabular-nums text-muted">{r.text}</span>
             </Link>

@@ -6,6 +6,7 @@ import { MUSCLE_IDS } from '../../types';
 import { createExercise } from '../../db';
 import { BIJSCHUIFGEWICHT_KEY } from '../../coach';
 import { nl } from '../../content/nl';
+import { BackLink } from '../../components/BackLink';
 import { MuscleMap } from '../../illustration/MuscleMap';
 import { MUSCLE_NAMES } from '../../illustration/muscles';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -74,10 +75,8 @@ export function NewExercise() {
 
   return (
     <section className="space-y-4">
-      <button type="button" onClick={() => navigate(-1)} className="text-sm font-semibold text-accent">
-        {t.back}
-      </button>
-      <h1 className="text-2xl font-bold">{t.newTitle}</h1>
+      <BackLink label={t.back} />
+      <h1 className="text-3xl font-bold">{t.newTitle}</h1>
       <label className="block">
         <span className="text-sm font-medium">{nl.schema.name}</span>
         <input

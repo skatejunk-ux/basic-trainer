@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { TemplateItem } from '../../types';
+import { Icon, type IconName } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { Sheet } from '../../components/Sheet';
 import { ScanButton } from '../scan/ScanButton';
@@ -59,15 +60,15 @@ export function WorkoutPage() {
 
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col bg-bg text-fg">
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/95 px-3 pb-2 pt-[calc(env(safe-area-inset-top)+8px)] backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border/60 bg-bg/95 px-3 pb-2 pt-[calc(env(safe-area-inset-top)+8px)] backdrop-blur">
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setLeaveOpen(true)}
             aria-label={t.close}
-            className="btn-ghost w-12 text-xl"
+            className="icon-btn"
           >
-            ✕
+            <Icon name="x" className="h-6 w-6" />
           </button>
           <div className="min-w-0 flex-1">
             <div className="truncate font-bold">{t.title(s.template.name)}</div>
@@ -88,16 +89,16 @@ export function WorkoutPage() {
           <Toggle
             on={s.settings.vibration}
             label={t.toggles.vibration}
-            icon="📳"
+            icon="vibrate"
             onClick={() => s.toggle('vibration')}
           />
           <Toggle
             on={s.settings.keepScreenOn}
             label={t.toggles.keepScreenOn}
-            icon="🔆"
+            icon="sun"
             onClick={() => s.toggle('keepScreenOn')}
           />
-          <Toggle on={s.settings.sound} label={t.toggles.sound} icon="🔔" onClick={() => s.toggle('sound')} />
+          <Toggle on={s.settings.sound} label={t.toggles.sound} icon="bell" onClick={() => s.toggle('sound')} />
         </div>
         {s.view === 'exercise' && (
           <ol className="mt-2 flex gap-1" aria-label={t.progress(doneCount, items.length)}>
@@ -111,7 +112,7 @@ export function WorkoutPage() {
                   className="flex h-6 w-full items-center"
                 >
                   <span
-                    className={`h-2 w-full rounded-full ${
+                    className={`h-1.5 w-full rounded-full transition-colors ${
                       i === index
                         ? 'bg-accent'
                         : isDone(it)
@@ -149,20 +150,20 @@ export function WorkoutPage() {
       </main>
 
       {s.view === 'exercise' && (
-        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-xl bg-bg/95 shadow-[0_-8px_24px_rgba(0,0,0,0.25)] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-xl border-t border-border/60 bg-bg/95 shadow-[0_-8px_24px_rgba(0,0,0,0.25)] backdrop-blur">
           <RestTimer />
-          <nav className="flex gap-2 border-t border-border px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+          <nav className="flex gap-2 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
             <button
               type="button"
               className="btn-secondary flex-1"
               disabled={index === 0}
               onClick={() => s.goTo(index - 1)}
             >
-              ← {t.prev}
+              <Icon name="chevron-left" /> {t.prev}
             </button>
             {last ? (
               <button type="button" className="btn-primary flex-[2]" onClick={() => s.showSummary(true)}>
-                🏁 {t.finish}
+                <Icon name="flag" /> {t.finish}
               </button>
             ) : (
               <button
@@ -170,7 +171,7 @@ export function WorkoutPage() {
                 className={`${isDone(item) ? 'btn-primary' : 'btn-secondary'} flex-[2]`}
                 onClick={() => s.goTo(index + 1)}
               >
-                {t.next} →
+                {t.next} <Icon name="chevron-right" />
               </button>
             )}
           </nav>
@@ -222,7 +223,7 @@ export function WorkoutPage() {
   );
 }
 
-function Toggle({ on, label, icon, onClick }: { on: boolean; label: string; icon: string; onClick: () => void }) {
+function Toggle({ on, label, icon, onClick }: { on: boolean; label: string; icon: IconName; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -230,10 +231,10 @@ function Toggle({ on, label, icon, onClick }: { on: boolean; label: string; icon
       aria-pressed={on}
       aria-label={label}
       title={label}
-      className={`relative flex h-12 w-11 items-center justify-center rounded-xl text-xl ${on ? '' : 'opacity-35 grayscale'}`}
+      className={`relative flex h-11 w-10 items-center justify-center rounded-full ${on ? 'text-fg' : 'text-muted/50'}`}
     >
-      {icon}
-      {!on && <span className="absolute h-0.5 w-7 rotate-45 bg-danger" aria-hidden />}
+      <Icon name={icon} className="h-5 w-5" />
+      {!on && <span className="absolute h-0.5 w-6 rotate-45 rounded-full bg-current" aria-hidden />}
     </button>
   );
 }

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CardioLog, CardioPlan } from '../../types';
 import { formatKg } from '../../coach';
+import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { beep, primeAudio, vibrate, VIBRATE_DONE } from './device';
 import { formatClock } from './plan';
@@ -46,7 +47,7 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
 
   if (log) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-success/40 bg-success/10 p-4" data-done="true">
+      <div className="flex items-center gap-3 rounded-2xl border border-success/40 bg-success/10 p-4" data-done="true">
         <span className="flex-1 font-semibold">
           {t.logged(log.minutes)} · {formatKg(log.inclinePct)}% · {formatKg(log.speedKmh)} km/u
         </span>
@@ -54,9 +55,9 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
           type="button"
           onClick={() => onUndo(log.id)}
           aria-label={nl.workout.undo}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-xl font-bold text-bg"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-bg"
         >
-          ✓
+          <Icon name="check" className="h-6 w-6" strokeWidth={3} />
         </button>
       </div>
     );
@@ -83,7 +84,9 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
           <div className="mt-1 text-sm text-muted">−{formatClock(Math.max(0, remaining))}</div>
         </div>
       )}
-      <p className="text-sm text-muted">💡 {t.tip}</p>
+      <p className="flex items-center gap-2 text-sm text-muted">
+        <Icon name="info" className="h-4 w-4" /> {t.tip}
+      </p>
       <div className="flex gap-2">
         {startedAt === null ? (
           <button
@@ -95,11 +98,11 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
               setStartedAt(Date.now());
             }}
           >
-            ▶ {t.start}
+            <Icon name="play" className="h-4 w-4" /> {t.start}
           </button>
         ) : (
           <button type="button" className="btn-secondary flex-1" onClick={() => setStartedAt(null)}>
-            ■ {t.stop}
+            <Icon name="stop" className="h-4 w-4" /> {t.stop}
           </button>
         )}
         <button type="button" className="btn-primary flex-1" onClick={save}>
