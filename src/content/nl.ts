@@ -34,7 +34,7 @@ export const nl = {
     backupNow: 'Nu backup maken',
     streak: (n: number) => `${n} weken op rij je weekdoel gehaald 🔥`,
     invite: {
-      title: 'Nodig een vriend uit voor Basic-Fit',
+      title: 'Login als man van Margie',
       share: 'Uitnodiging delen',
       shareText: 'Word lid van Basic-Fit via mijn uitnodiging:',
     },

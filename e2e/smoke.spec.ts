@@ -24,7 +24,7 @@ test('laadt de app en navigeert door de 4 tabs', async ({ page }) => {
 
 test('Vandaag toont de Basic-Fit-uitnodiging bovenaan', async ({ page }) => {
   await page.goto('./');
-  const link = page.getByTestId('invite-card').getByRole('link', { name: /Nodig een vriend uit/ });
+  const link = page.getByTestId('invite-card').getByRole('link', { name: /Login als man van Margie/ });
   await expect(link).toHaveAttribute('href', 'https://member.basic-fit.com/friends/nl-NL/join/4HF7N9RG');
   await expect(link).toHaveAttribute('target', '_blank');
 });
