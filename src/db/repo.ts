@@ -2,6 +2,7 @@ import type {
   AppSettings,
   CardioLog,
   Exercise,
+  MachineCode,
   MachineSettings,
   Session,
   SetLog,
@@ -28,7 +29,10 @@ export async function updateExercise(id: string, changes: Partial<Omit<Exercise,
   await db.exercises.update(id, changes);
 }
 export async function deleteExercise(id: string): Promise<void> {
-  await db.exercises.delete(id);
+  await db.transaction('rw', db.exercises, db.machineCodes, async () => {
+    await db.exercises.delete(id);
+    await db.machineCodes.where('exerciseId').equals(id).delete();
+  });
 }
 
 // ---------- machine settings ----------
@@ -173,6 +177,20 @@ export async function listCardioLogsByExercise(exerciseId: string): Promise<Card
     .where('[exerciseId+completedAt]')
     .between([exerciseId, Dexie_MIN], [exerciseId, Dexie_MAX])
     .toArray();
+}
+
+// ---------- machinecodes (QR-scan) ----------
+export const getMachineCode = (code: string): Promise<MachineCode | undefined> => db.machineCodes.get(code);
+export const listMachineCodesByExercise = (exerciseId: string): Promise<MachineCode[]> =>
+  db.machineCodes.where('exerciseId').equals(exerciseId).toArray();
+/** Koppelt een code aan een oefening; een bestaande koppeling van die code wordt overschreven. */
+export async function linkMachineCode(code: string, exerciseId: string, format?: string): Promise<MachineCode> {
+  const row: MachineCode = { code, exerciseId, linkedAt: Date.now(), ...(format ? { format } : {}) };
+  await db.machineCodes.put(row);
+  return row;
+}
+export async function unlinkMachineCode(code: string): Promise<void> {
+  await db.machineCodes.delete(code);
 }
 
 // ---------- app settings ----------

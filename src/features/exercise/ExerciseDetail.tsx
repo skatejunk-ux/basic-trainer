@@ -18,6 +18,7 @@ import { ExerciseInstructions, SettingsForm } from '../../components/exercise/Ex
 import { NumberStepper } from '../../components/NumberStepper';
 import { ProgressChart } from '../history/ProgressChart';
 import { buildProgress } from '../history/progress';
+import { LinkedCodes } from '../scan/LinkedCodes';
 import { capFirst, summarizeSets } from '../workout/plan';
 
 const t = nl.exercise;
@@ -162,6 +163,7 @@ export function ExerciseDetail() {
               className="mt-1 w-full rounded-xl border border-border bg-surface-2 p-3 outline-none focus:border-accent"
             />
           </label>
+          <LinkedCodes exerciseId={exercise.id} exerciseName={exercise.name} />
         </div>
       )}
 

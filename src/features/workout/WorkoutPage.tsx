@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { TemplateItem } from '../../types';
 import { nl } from '../../content/nl';
 import { Sheet } from '../../components/Sheet';
+import { ScanButton } from '../scan/ScanButton';
 import { useWakeLock } from './device';
 import { ExerciseCard } from './ExerciseCard';
 import { displayName, exerciseIdFor, formatDuration, isItemDone, itemsInOrder } from './plan';
@@ -74,6 +75,16 @@ export function WorkoutPage() {
               {t.progress(doneCount, items.length)} · {formatDuration(now - session.startedAt)}
             </div>
           </div>
+          {s.view === 'exercise' && (
+            <ScanButton
+              workout={{
+                exerciseIds: items.map((it) => exerciseIdFor(session, it)),
+                done: items.map(isDone),
+                current: index,
+              }}
+              onGotoItem={(i) => s.goTo(i)}
+            />
+          )}
           <Toggle
             on={s.settings.vibration}
             label={t.toggles.vibration}

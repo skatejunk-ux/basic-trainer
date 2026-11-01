@@ -76,6 +76,22 @@ export function MorePage() {
             onChange={(v) => change({ weekGoal: Number(v) as 3 | 4 })}
           />
         </div>
+        <label className="block px-3 py-2">
+          <span className="mb-2 block">{t.bodyWeight}</span>
+          <input
+            inputMode="decimal"
+            key={settings.bodyWeightKg ?? ''}
+            defaultValue={settings.bodyWeightKg ?? ''}
+            onBlur={(e) => {
+              const raw = e.target.value.trim();
+              const v = Number(raw.replace(',', '.'));
+              if (!raw) return void change({ bodyWeightKg: undefined });
+              if (v >= 30 && v <= 300 && v !== settings.bodyWeightKg) void change({ bodyWeightKg: Math.round(v * 10) / 10 });
+            }}
+            className="min-h-touch w-full rounded-xl border border-border bg-surface-2 px-3 outline-none focus:border-accent"
+          />
+          <span className="mt-1 block text-xs text-muted">{t.bodyWeightHint}</span>
+        </label>
       </Group>
 
       <Group title={t.appearance}>

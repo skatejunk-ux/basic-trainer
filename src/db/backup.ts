@@ -2,6 +2,7 @@ import type {
   AppSettings,
   CardioLog,
   Exercise,
+  MachineCode,
   MachineSettings,
   Session,
   SetLog,
@@ -21,6 +22,7 @@ export interface Backup {
   setLogs: SetLog[];
   cardioLogs: CardioLog[];
   settings: AppSettings[];
+  machineCodes: MachineCode[]; // sinds schemaVersion 2
 }
 
 export type ImportMode = 'replace' | 'merge';
@@ -43,6 +45,7 @@ export async function exportBackup(): Promise<Backup> {
     setLogs: await db.setLogs.toArray(),
     cardioLogs: await db.cardioLogs.toArray(),
     settings: await db.settings.toArray(),
+    machineCodes: await db.machineCodes.toArray(),
   }));
 }
 
@@ -115,6 +118,7 @@ const recordChecks: Record<string, (r: Record<string, unknown>) => boolean> = {
   cardioLogs: (r) =>
     isStr(r.id) && isStr(r.sessionId) && isStr(r.exerciseId) && isNum(r.minutes) && isNum(r.completedAt),
   settings: (r) => r.id === 'singleton' && typeof r.vibration === 'boolean',
+  machineCodes: (r) => isStr(r.code) && isStr(r.exerciseId) && isNum(r.linkedAt),
 };
 
 /** Valideert en geeft een Backup terug; gooit BackupError bij ongeldige invoer. */
@@ -135,15 +139,17 @@ export function parseBackup(input: string | unknown): Backup {
     throw new BackupError('Deze back-up is gemaakt met een nieuwere versie van de app.');
   }
   if (!isNum(data.exportedAt)) throw new BackupError('Back-up mist exportedAt.');
+  // v1 → v2: machinecodes bestonden nog niet.
+  if (data.schemaVersion < 2 && data.machineCodes === undefined) data = { ...data, machineCodes: [] };
+  const rec = data as Record<string, unknown>;
   for (const [table, check] of Object.entries(recordChecks)) {
-    const rows = data[table];
+    const rows = rec[table];
     if (!Array.isArray(rows)) throw new BackupError(`Back-up mist tabel "${table}".`);
     rows.forEach((row, i) => {
       if (!isObj(row) || !check(row)) throw new BackupError(`Ongeldig record ${i} in tabel "${table}".`);
     });
   }
-  // Hier komen later omzettingen voor oudere schemaVersions.
-  return data as unknown as Backup;
+  return rec as unknown as Backup;
 }
 
 /**
@@ -163,6 +169,7 @@ export async function importBackup(input: string | unknown, mode: ImportMode): P
     await db.sessions.bulkPut(b.sessions);
     await db.setLogs.bulkPut(b.setLogs);
     await db.cardioLogs.bulkPut(b.cardioLogs);
+    await db.machineCodes.bulkPut(b.machineCodes);
   });
   await seedIfEmpty(); // zorgt voor een instellingenrij als de back-up er geen had
 }

@@ -8,6 +8,8 @@ Een PWA (installeerbare web-app) voor Android waarmee je een Basic-Fit machine-r
 
 - **Vandaag** – volgende training (A/B wisselt vanzelf), weekdoel-ring, vorige training, backup-herinnering.
 - **Training** – één oefening per scherm met spierkaart en uitleg, jouw machine-instellingen als labels, gewichtsadvies van de progressie-coach, sets loggen met grote −/+ knoppen (per been bij single-leg), rusttimer die trilt/piept, *machine bezet*, overslaan, vervangen en volgorde slepen. Trillen, geluid en scherm-aan zijn los uit te zetten.
+- **Machine scannen** – scan de QR- of streepjescode op een machine; de eerste keer koppel je hem aan een oefening, daarna springt de app er direct naartoe (ook midden in een training). Werkt in Chrome op Android.
+- **kcal-schatting** – na je training een schatting van je verbruik (kracht + cardio), op basis van je lichaamsgewicht (instelbaar onder Meer).
 - **Historie** – alle trainingen per maand, detail per training, verwijderen.
 - **Schema** – trainingen bewerken (volgorde slepen, sets/reps/rust, opwarmset), nieuwe training, oefeningenbibliotheek, eigen oefening toevoegen.
 - **Oefening** – uitleg, instellingen + gewichtsstap, voortgangsgrafiek (per been bij single-leg) en historie.

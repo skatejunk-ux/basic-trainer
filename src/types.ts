@@ -154,6 +154,14 @@ export interface CardioLog {
   completedAt: number;
 }
 
+/** Gescande QR-/streepjescode op een machine, gekoppeld aan een oefening (PLAN.md §12.1). */
+export interface MachineCode {
+  code: string; // ruwe inhoud van de code
+  exerciseId: string;
+  format?: string; // bv. 'qr_code', 'code_128'
+  linkedAt: number;
+}
+
 export interface AppSettings {
   id: 'singleton';
   theme: 'dark' | 'light' | 'system';
@@ -163,6 +171,7 @@ export interface AppSettings {
   defaultRestSec: number;
   weekGoal: 3 | 4;
   lastBackupAt?: number;
+  bodyWeightKg?: number; // voor de kcal-schatting (PLAN.md §12.2)
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {

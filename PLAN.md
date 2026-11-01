@@ -391,3 +391,33 @@ WP0 Scaffold + contracten ──┬─> WP1 Data & seed ──┬─> WP4 Workou
 5. **Loopband**: direct 12-3-30, geen opbouwplan.
 
 Nog na te gaan bij je eerstvolgende bezoek (niet blokkerend): het soort back extension en of je stacks een bijschuifgewicht hebben. Beide vul je gewoon in de app in.
+
+---
+
+## 12. Lessen uit de Technogym-app + plan QR-scan & inspanningsscore (2026-11-01)
+
+Bron: `com.technogym.tgapp` 3.46.0 (APKMirror-bundle), Flutter-app. Bekeken: teksten (`assets/locale/en.json`), assets en strings uit `libapp.so`.
+
+**Wat de Technogym-app doet**
+- **QR-scan** (ML Kit barcode-scanner) op twee plekken: *"Search for exercises: Scan the QR Code on the equipment"* (oefeningen filteren op machine) en *equipment connection* (inloggen op een machine). Alleen Technogym-codes worden herkend (*"Scan a QR code on Technogym equipment"*). De koppeling code → machine gaat via hun server (`QRCodeData{serial…}`, `ResolveEquipmentFromQrCodeMixin`).
+- **Resolver-keten**: één scanner met losse resolvers per soort code (Equipment, EquipmentLogin, CardioConnect, Facility, AccessCode, DynamicLink, Support…). Elke resolver probeert de code; de eerste die hem herkent handelt hem af. Dat patroon nemen we over.
+- **Camera-permissie**: een eigen uitlegscherm vóór de vraag en een duidelijke foutmelding met de weg naar Instellingen als de toestemming geweigerd is.
+- **"Offline equipment"**: *"This equipment doesn't track reps. Indicate when you have finished."* Dat doen wij al: handmatig loggen.
+- **MOVEs / Movergy**: de berekening gebeurt op hun server en staat niet in de app. Verder: streaks (`streak_performed.mp3`, `streak_broken.mp3`), challenges en leaderboards.
+- **Geluiden**: `step_start`, `step_complete`, `exe_complete`. Mogelijk idee voor later (§10).
+
+### 12.1 QR-koppel-scan (besloten)
+- **Koppelen**: je scant een willekeurige QR- of streepjescode op een machine (Technogym-QR, serienummer-sticker). Is die code onbekend, dan volgt een sheet "Welke oefening is dit?" met de oefeningenlijst. De keuze wordt opgeslagen. Elke code werkt, want we lezen alleen de ruwe tekst en hebben geen server nodig.
+- **Daarna**: tijdens een training spring je na een scan naar die oefening als die in de training zit. Dat lost ook *machine bezet* op: je pakt een vrije machine en scant hem. Buiten een training opent de scan de oefening-detailpagina. Zit de oefening niet in de training, dan zie je een melding met een link naar de detailpagina (niets toevoegen).
+- **Techniek**: `BarcodeDetector` (Chrome Android, formats `qr_code`, `code_128`, `ean_13`, `data_matrix`) + `getUserMedia({ video: { facingMode: 'environment' } })` in een full-screen `Sheet`. Wordt dat niet ondersteund (desktop of iOS), dan is de knop verborgen. Geen extra library.
+- **Data**: nieuwe tabel `machineCodes: 'code, exerciseId'` (`{ code, exerciseId, format, linkedAt }`) via `db.version(2)` en `SCHEMA_VERSION = 2`. Back-up en terugzetten nemen de tabel mee, en v1-back-ups blijven werken.
+- **UI**: een scanknop in de header van Workout en Vandaag. Op Oefening-detail komt "Gekoppelde codes", met de optie om een koppeling te verwijderen of opnieuw te scannen.
+- **Resolver-keten** (`src/features/scan/resolve.ts`, puur en getest): eerst `linkedCode`, daarna `unknown → koppelen`. Later kunnen er resolvers bij komen, zoals een eigen `basic-trainer:`-deeplink.
+- **Tests**: unit-tests voor de resolver en de backup-migratie. In de e2e-test wordt `BarcodeDetector` gemockt, zodat de flows koppelen → springen en onbekend → koppelen getest worden.
+
+### 12.2 Inspanningsscore in kcal (besloten: op calorieën, alleen in de Samenvatting)
+- **Instelling**: lichaamsgewicht (kg) onder Meer, in `AppSettings.bodyWeightKg?`. Zonder gewicht toont de Samenvatting een knop "Vul je gewicht in voor je kcal".
+- **Cardio**: als de loopband kcal gaf (`CardioLog.kcal`), gebruiken we die. Anders rekenen we met de ACSM-loopformule: VO₂ = 3,5 + 0,1·v + 1,8·v·helling (v in m/min, helling als fractie), en kcal = VO₂ · kg / 1000 · 5 · minuten.
+- **Kracht**: MET × kg × actieve tijd. De actieve tijd is de sessieduur min de cardio-minuten, met een maximum van sets × 2,5 min. De MET hangt af van het gevoel: licht 3,5, goed 5, zwaar 6. Is er geen gevoel ingevuld, dan geldt 5.
+- **Weergave**: in de Samenvatting staat de stat "≈ 412 kcal" met daaronder de verdeling kracht/cardio en het verschil met de vorige training van hetzelfde template. In de UI staat erbij dat het een schatting is.
+- **Code**: een pure module `src/coach/energy.ts` met unit-tests (bekende ACSM-waarden, randgevallen zonder gewicht of zonder cardio).

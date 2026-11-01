@@ -23,6 +23,7 @@ export {
   type RoundMode,
 } from './math';
 export { coachText } from './messages';
+export { sessionEnergy, cardioKcal, strengthKcal, type Energy } from './energy';
 export type {
   Suggestion,
   SuggestionKind,

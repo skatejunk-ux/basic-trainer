@@ -16,6 +16,7 @@ import {
 import { nl } from '../../content/nl';
 import { useWorkout } from '../workout/store';
 import { capFirst, displayName, formatDuration, tonnage } from '../workout/plan';
+import { ScanButton } from '../scan/ScanButton';
 import { InviteCard } from './InviteCard';
 import { daysSince, sessionsInWeek, weekStreak } from './week';
 
@@ -81,7 +82,10 @@ export function TodayPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-bold">{nl.pages.today.title}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">{nl.pages.today.title}</h1>
+        <ScanButton className="btn-secondary h-12 w-12 text-xl" />
+      </div>
 
       <InviteCard />
 

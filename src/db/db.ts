@@ -3,6 +3,7 @@ import type {
   AppSettings,
   CardioLog,
   Exercise,
+  MachineCode,
   MachineSettings,
   Session,
   SetLog,
@@ -17,7 +18,7 @@ import type {
  * gewijzigde tabellen hoeven vermeld), verhoog SCHEMA_VERSION en pas
  * `backup.ts` aan als oude back-ups omgezet moeten worden.
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export class BasicTrainerDB extends Dexie {
   exercises!: Table<Exercise, string>;
@@ -27,6 +28,7 @@ export class BasicTrainerDB extends Dexie {
   setLogs!: Table<SetLog, string>;
   cardioLogs!: Table<CardioLog, string>;
   settings!: Table<AppSettings, string>;
+  machineCodes!: Table<MachineCode, string>;
 
   constructor(name = 'basic-trainer') {
     super(name);
@@ -39,9 +41,8 @@ export class BasicTrainerDB extends Dexie {
       cardioLogs: 'id, sessionId, exerciseId, [exerciseId+completedAt]',
       settings: 'id',
     });
-    // Voorbeeld voor een volgende versie:
-    // this.version(2).stores({ sessions: 'id, templateId, status, startedAt, endedAt' })
-    //   .upgrade(async (tx) => { await tx.table('sessions').toCollection().modify(...); });
+    // v2: gescande machinecodes (PLAN.md §12.1).
+    this.version(2).stores({ machineCodes: 'code, exerciseId' });
   }
 }
 

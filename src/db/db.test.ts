@@ -13,6 +13,12 @@ import {
   getLastSessionPerTemplate,
   getSettings,
   importBackup,
+  linkMachineCode,
+  listMachineCodesByExercise,
+  unlinkMachineCode,
+  getMachineCode,
+  createExercise,
+  deleteExercise,
   listCardioLogsBySession,
   listExercises,
   listSetLogsByExercise,
@@ -140,6 +146,24 @@ describe('repo', () => {
   });
 });
 
+describe('machinecodes', () => {
+  it('koppelt, overschrijft en ontkoppelt', async () => {
+    await linkMachineCode('abc', 'leg-press');
+    await linkMachineCode('abc', 'chest-press', 'qr_code');
+    expect(await getMachineCode('abc')).toMatchObject({ exerciseId: 'chest-press', format: 'qr_code' });
+    expect(await listMachineCodesByExercise('leg-press')).toHaveLength(0);
+    await unlinkMachineCode('abc');
+    expect(await getMachineCode('abc')).toBeUndefined();
+  });
+
+  it('verwijdert codes mee met een eigen oefening', async () => {
+    const e = await createExercise({ ...SEED_EXERCISES[0], name: 'Eigen', isCustom: true, id: 'eigen' });
+    await linkMachineCode('xyz', e.id);
+    await deleteExercise(e.id);
+    expect(await getMachineCode('xyz')).toBeUndefined();
+  });
+});
+
 describe('backup', () => {
   async function fill() {
     const s = await createSession('template-a', ['a-1']);
@@ -147,6 +171,7 @@ describe('backup', () => {
     await finishSession(s.id, 'top');
     await saveMachineSettings({ exerciseId: 'back-extension', values: { type: 'bench' }, incrementKg: 5 });
     await updateSettings({ theme: 'light', lastBackupAt: 42 });
+    await linkMachineCode('TG-123', 'leg-press', 'qr_code');
     return s;
   }
 
@@ -158,7 +183,8 @@ describe('backup', () => {
     const again = await exportBackup();
     const orig = JSON.parse(json);
     expect({ ...again, exportedAt: 0 }).toEqual({ ...orig, exportedAt: 0 });
-    expect(orig.schemaVersion).toBe(1);
+    expect(orig.schemaVersion).toBe(2);
+    expect(orig.machineCodes).toEqual([expect.objectContaining({ code: 'TG-123', exerciseId: 'leg-press' })]);
   });
 
   it('replace wist bestaande data', async () => {
@@ -184,6 +210,14 @@ describe('backup', () => {
     expect(await db.exercises.count()).toBe(8);
   });
 
+  it('zet een v1-back-up (zonder machinecodes) om', async () => {
+    await fill();
+    const { machineCodes: _drop, ...v1 } = { ...(await exportBackup()), schemaVersion: 1 };
+    await importBackup(v1, 'replace');
+    expect(await db.machineCodes.count()).toBe(0);
+    expect(await db.sessions.count()).toBe(1);
+  });
+
   it('weigert ongeldige invoer', async () => {
     const good = await exportBackup();
     const bad: unknown[] = [
@@ -193,6 +227,7 @@ describe('backup', () => {
       { ...good, schemaVersion: 999 },
       { ...good, sessions: undefined },
       { ...good, setLogs: [{ id: 'x' }] },
+      { ...good, machineCodes: [{ code: 1 }] },
     ];
     await fill();
     const before = await db.sessions.count();
