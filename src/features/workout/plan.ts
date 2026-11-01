@@ -116,6 +116,19 @@ export function formatPrevious(prev: Suggestion['previous']): string | null {
     .join(' · ');
 }
 
+/** Compacte samenvatting van werksets: "60 kg: 8/7/6" of per been "L 36,5 kg: 11/11 · R 38,5 kg: 11/11". */
+export function summarizeSets(sets: SetLog[]): string {
+  const work = [...sets].filter((l) => !l.isWarmup).sort((a, b) => a.completedAt - b.completedAt);
+  const groups: { side?: string; weight: number; reps: number[] }[] = [];
+  for (const l of work) {
+    const g = groups.find((x) => x.side === l.side && x.weight === l.weightKg);
+    if (g) g.reps.push(l.reps);
+    else groups.push({ side: l.side, weight: l.weightKg, reps: [l.reps] });
+  }
+  groups.sort((a, b) => (a.side ?? '').localeCompare(b.side ?? ''));
+  return groups.map((g) => `${g.side ? `${g.side} ` : ''}${formatKg(g.weight)} kg: ${g.reps.join('/')}`).join(' · ');
+}
+
 export function tonnage(logs: SetLog[]): number {
   return logs.filter((l) => !l.isWarmup).reduce((sum, l) => sum + l.weightKg * l.reps, 0);
 }
@@ -126,6 +139,9 @@ export function formatDuration(ms: number): string {
   const m = totalMin % 60;
   return h ? `${h} u ${m} min` : `${m} min`;
 }
+
+/** Eerste letter hoofdletter ("vr 30 okt" → "Vr 30 okt"); CSS capitalize zou elk woord doen. */
+export const capFirst = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 export function formatClock(sec: number): string {
   const s = Math.max(0, Math.ceil(sec));

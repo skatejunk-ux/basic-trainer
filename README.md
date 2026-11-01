@@ -4,6 +4,15 @@ Een PWA (installeerbare web-app) voor Android waarmee je een Basic-Fit machine-r
 
 **Live:** https://skatejunk-ux.github.io/basic-trainer/
 
+## Wat kan het
+
+- **Vandaag** – volgende training (A/B wisselt vanzelf), weekdoel-ring, vorige training, backup-herinnering.
+- **Training** – één oefening per scherm met spierkaart en uitleg, jouw machine-instellingen als labels, gewichtsadvies van de progressie-coach, sets loggen met grote −/+ knoppen (per been bij single-leg), rusttimer die trilt/piept, *machine bezet*, overslaan, vervangen en volgorde slepen. Trillen, geluid en scherm-aan zijn los uit te zetten.
+- **Historie** – alle trainingen per maand, detail per training, verwijderen.
+- **Schema** – trainingen bewerken (volgorde slepen, sets/reps/rust, opwarmset), nieuwe training, oefeningenbibliotheek, eigen oefening toevoegen.
+- **Oefening** – uitleg, instellingen + gewichtsstap, voortgangsgrafiek (per been bij single-leg) en historie.
+- **Meer** – schakelaars, weekdoel, donker/licht/systeem, backup maken (deelmenu/download) en terugzetten.
+
 ## Draaien
 
 Vereist Node.js 22 of nieuwer.

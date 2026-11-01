@@ -22,7 +22,8 @@ export function WorkoutPage() {
   const now = useNow(s.status === 'ready', 15000);
 
   useEffect(() => {
-    if (useWorkout.getState().status !== 'ready') void useWorkout.getState().init();
+    // Altijd vers laden: instellingen of schema kunnen buiten de workout gewijzigd zijn.
+    void useWorkout.getState().init();
   }, []);
   useWakeLock(s.status === 'ready' && s.settings.keepScreenOn);
   useEffect(() => {

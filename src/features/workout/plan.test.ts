@@ -8,6 +8,7 @@ import {
   displayName,
   formatClock,
   formatPrevious,
+  summarizeSets,
   itemsInOrder,
   moveToEnd,
   restAfter,
@@ -123,5 +124,23 @@ describe('rust en tekst', () => {
         'W',
       ),
     ).toBe('Loopband 12-3-30');
+  });
+});
+
+describe('summarizeSets', () => {
+  const l = (weightKg: number, reps: number, side?: 'L' | 'R', isWarmup = false, t = 0) =>
+    ({ weightKg, reps, side, isWarmup, completedAt: t }) as never;
+  it('groepeert per gewicht en per been, zonder opwarmsets', () => {
+    expect(
+      summarizeSets([
+        l(30, 10, undefined, true),
+        l(60, 8, undefined, false, 1),
+        l(60, 7, undefined, false, 2),
+        l(65, 6, undefined, false, 3),
+      ]),
+    ).toBe('60 kg: 8/7 · 65 kg: 6');
+    expect(summarizeSets([l(38.5, 11, 'R', false, 1), l(36.5, 11, 'L', false, 2), l(36.5, 10, 'L', false, 3)])).toBe(
+      'L 36,5 kg: 11/10 · R 38,5 kg: 11',
+    );
   });
 });

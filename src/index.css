@@ -105,3 +105,14 @@ body {
     @apply inline-flex items-center rounded-full border border-border bg-surface-2 px-3 py-1 text-sm;
   }
 }
+
+/* Grafiekkleuren (dataviz-referentiepalet, categorisch slot 1 en 2) */
+:root,
+:root[data-theme='dark'] {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+}
+:root[data-theme='light'] {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+}

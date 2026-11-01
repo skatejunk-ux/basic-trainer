@@ -355,6 +355,19 @@ WP0 Scaffold + contracten ──┬─> WP1 Data & seed ──┬─> WP4 Workou
 
 ---
 
+## 9b. Status (2026-11-01)
+
+| WP | Status |
+|---|---|
+| WP0 Scaffold | ✅ klaar |
+| WP1 Data & seed | ✅ klaar |
+| WP2 Progressie-coach | ✅ klaar |
+| WP3 Spierkaart | ✅ klaar (animaties → backlog) |
+| WP4 Workout-modus + rusttimer | ✅ klaar |
+| WP5 Schema-editor + oefening-detail + eigen oefening | ✅ klaar |
+| WP6 Historie, grafiek, Vandaag, Meer/backup/thema | ✅ klaar |
+| WP7 E2e-tests (incl. offline), README, manifest-shortcuts | ✅ klaar; nog te testen op een echte Android-telefoon (trillen, wake lock, installeren) |
+
 ## 10. Backlog (na v1)
 
 - **Animaties per machine** (uitgesteld op 2026-11-01): 2D-poppetje met forward kinematics en keyframes op tempo, gestileerde machine waarvan de bewegende delen meebewegen, fase-label ("Duw – 1 s"), adem-icoon, setup-modus met genummerde pijlen, `prefers-reduced-motion`. 9 animaties (incl. 2 voor back extension). `animationId` staat al in de data. Bouw dit in kleine stukken (eerst rig + 1 oefening, dan per 2–3 oefeningen) met tussentijdse commits.
