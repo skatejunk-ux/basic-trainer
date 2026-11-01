@@ -19,6 +19,7 @@ const paths = {
   'chevron-right': ['m9 18 6-6-6-6'],
   'arrow-right': ['M5 12h14', 'm12 5 7 7-7 7'],
   play: ['M7 4.5v15a.5.5 0 0 0 .77.42l11.5-7.5a.5.5 0 0 0 0-.84L7.77 4.08A.5.5 0 0 0 7 4.5z'],
+  pause: ['M7 5h3a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M14 5h3a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z'],
   stop: ['M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z'],
   vibrate: [
     'm2 8 2 2-2 2 2 2-2 2',
@@ -95,7 +96,7 @@ const paths = {
 
 export type IconName = keyof typeof paths;
 
-const filled = new Set<IconName>(['play', 'stop']);
+const filled = new Set<IconName>(['play', 'pause', 'stop']);
 
 interface Props {
   name: IconName;

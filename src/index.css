@@ -59,8 +59,10 @@ h2 {
 :root[data-theme='dark'] {
   --mm-skin: 246 205 168;
   --mm-outline: 12 14 18;
-  --mm-idle: 112 121 136;
-  --mm-secondary: 250 204 21;
+  /* Spieren in rust: een tint donkerder dan de huid, met bruine definitielijnen. */
+  --mm-idle: 233 183 143;
+  --mm-line: 176 116 82;
+  --mm-secondary: 251 191 36;
   --mm-shorts: 59 130 246;
   --mm-shoe: 236 238 242;
   --mm-hair: 92 64 51;
@@ -68,8 +70,7 @@ h2 {
 
 :root[data-theme='light'] {
   --mm-outline: 30 34 42;
-  --mm-idle: 196 202 212;
-  --mm-secondary: 234 179 8;
+  --mm-secondary: 234 170 8;
 }
 
 .muscle-map svg path,
@@ -86,62 +87,115 @@ h2 {
 .muscle-map .mm-outline-stroke { fill: none; }
 .muscle-map .mm-shorts { fill: rgb(var(--mm-shorts)); }
 .muscle-map .mm-shoe { fill: rgb(var(--mm-shoe)); }
+.muscle-map .mm-sole { fill: none; stroke: rgb(var(--color-accent)) !important; stroke-width: 4 !important; }
 .muscle-map .mm-hair { fill: rgb(var(--mm-hair)); }
-.muscle-map .mm-eye { fill: rgb(var(--mm-outline)); stroke: none; }
-.muscle-map .mm-cheek { fill: rgb(244 114 182 / 0.45); stroke: none; }
-.muscle-map .mm-detail { fill: none; stroke-width: 2; opacity: 0.6; }
+.muscle-map .mm-hair-shine { fill: none; stroke: rgb(255 255 255 / 0.22) !important; stroke-width: 4 !important; }
+.muscle-map .mm-eye { fill: rgb(var(--mm-outline)); stroke: none !important; }
+.muscle-map .mm-eye-shine { fill: rgb(255 255 255 / 0.9); stroke: none !important; }
+.muscle-map .mm-cheek { fill: rgb(244 114 182 / 0.4); stroke: none !important; }
+.muscle-map .mm-detail { fill: none; stroke: rgb(var(--mm-line)) !important; stroke-width: 2; }
+.muscle-map .mm-face { fill: none; stroke-width: 2.5; }
+.muscle-map .mm-shadow { fill: rgb(0 0 0 / 0.22); stroke: none !important; }
+.muscle-map .mm-muscle { stroke: rgb(var(--mm-line)) !important; stroke-width: 1.75 !important; }
 .muscle-map .mm-idle { fill: rgb(var(--mm-idle)); }
-.muscle-map .mm-primary { fill: rgb(var(--color-accent)); }
-.muscle-map .mm-secondary { fill: rgb(var(--mm-secondary)); }
+.muscle-map .mm-muscle.mm-primary { fill: rgb(var(--color-accent)); stroke: rgb(var(--mm-outline)) !important; stroke-width: 2 !important; }
+.muscle-map .mm-muscle.mm-secondary { fill: rgb(var(--mm-secondary)); stroke: rgb(var(--mm-outline)) !important; stroke-width: 2 !important; }
+.muscle-map .mm-muscle.mm-shorts { stroke: rgb(var(--mm-outline)) !important; stroke-width: 2 !important; }
 .muscle-map .mm-caption text { fill: rgb(var(--color-muted)); font-size: 16px; font-weight: 600; stroke: none; }
 .mm-swatch-primary { background: rgb(var(--color-accent)); }
 .mm-swatch-secondary { background: rgb(var(--mm-secondary)); }
+@keyframes mm-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgb(var(--color-accent) / 0)); }
+  50% { filter: drop-shadow(0 0 6px rgb(var(--color-accent) / 0.8)); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .muscle-map.mm-animate .mm-muscle.mm-primary { animation: mm-pulse 2.4s ease-in-out infinite; }
+}
 
 /* Machine-cartoons (src/animation/) */
 :root,
 :root[data-theme='dark'] {
   --mc-frame: 128 137 152;
-  --mc-pad: 64 70 84;
-  --mc-stack: 176 184 196;
-  --mc-grip: 36 40 48;
+  --mc-pad: 58 63 76;
+  --mc-stack: 150 158 172;
+  --mc-stack-lift: 206 212 222;
+  --mc-tower: 34 38 46;
+  --mc-grip: 30 34 42;
   --mc-skin-far: 222 176 140;
+  --mc-shirt: 236 240 245;
+  --mc-shirt-far: 188 196 208;
   --mc-shorts-far: 37 99 205;
+  --mc-spot: 255 255 255;
+  --mc-spot-a: 0.07;
 }
 
 :root[data-theme='light'] {
   --mc-frame: 150 158 172;
   --mc-pad: 58 64 76;
+  --mc-stack: 176 184 196;
+  --mc-stack-lift: 226 230 236;
+  --mc-tower: 232 235 240;
+  --mc-shirt-far: 200 207 218;
+  --mc-spot: var(--color-accent);
+  --mc-spot-a: 0.08;
 }
 
 .machine-cartoon .mc-ol { fill: none; stroke: rgb(var(--mm-outline)); stroke-linecap: round; stroke-linejoin: round; }
 .machine-cartoon .mc-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.machine-cartoon .mc-fill { stroke: rgb(var(--mm-outline)); stroke-width: 2.5; }
+.machine-cartoon .mc-fill { stroke: rgb(var(--mm-outline)); stroke-width: 2; }
 .machine-cartoon .mc-line.mc-skin { stroke: rgb(var(--mm-skin)); }
 .machine-cartoon .mc-line.mc-skin-far { stroke: rgb(var(--mc-skin-far)); }
+.machine-cartoon .mc-line.mc-shirt { stroke: rgb(var(--mc-shirt)); }
+.machine-cartoon .mc-line.mc-shirt-far { stroke: rgb(var(--mc-shirt-far)); }
 .machine-cartoon .mc-line.mc-shorts { stroke: rgb(var(--mm-shorts)); }
 .machine-cartoon .mc-line.mc-shorts-far { stroke: rgb(var(--mc-shorts-far)); }
 .machine-cartoon .mc-line.mc-shoe { stroke: rgb(var(--mm-shoe)); }
+.machine-cartoon .mc-line.mc-sole { stroke: rgb(var(--color-accent)); }
 .machine-cartoon .mc-line.mc-frame { stroke: rgb(var(--mc-frame)); }
 .machine-cartoon .mc-line.mc-pad { stroke: rgb(var(--mc-pad)); }
 .machine-cartoon .mc-line.mc-grip { stroke: rgb(var(--mc-grip)); }
+.machine-cartoon .mc-line.mc-sheen { stroke: rgb(255 255 255 / 0.28); }
 .machine-cartoon .mc-fill.mc-skin { fill: rgb(var(--mm-skin)); }
 .machine-cartoon .mc-fill.mc-skin-far { fill: rgb(var(--mc-skin-far)); }
 .machine-cartoon .mc-fill.mc-hair { fill: rgb(var(--mm-hair)); }
 .machine-cartoon .mc-fill.mc-pad { fill: rgb(var(--mc-pad)); }
 .machine-cartoon .mc-fill.mc-grip { fill: rgb(var(--mc-grip)); }
-.machine-cartoon .mc-fill.mc-stack { fill: rgb(var(--mc-stack)); stroke-width: 2; }
+.machine-cartoon .mc-fill.mc-stack { fill: rgb(var(--mc-stack)); stroke-width: 1.5; }
+.machine-cartoon .mc-fill.mc-stack-lift { fill: rgb(var(--mc-stack-lift)); stroke-width: 1.5; }
+.machine-cartoon .mc-fill.mc-knob { fill: rgb(var(--color-accent)); stroke-width: 1.5; }
+.machine-cartoon .mc-tower { fill: rgb(var(--mc-tower)); }
+.machine-cartoon .mc-hair-shine { fill: none; stroke: rgb(255 255 255 / 0.25); stroke-width: 2; stroke-linecap: round; }
 .machine-cartoon .mc-eye { fill: rgb(var(--mm-outline)); }
-.machine-cartoon .mc-cheek { fill: rgb(244 114 182 / 0.45); }
-.machine-cartoon .mc-detail { fill: none; stroke: rgb(var(--mm-outline)); stroke-width: 2; stroke-linecap: round; }
-.machine-cartoon .mc-cable { fill: none; stroke: rgb(var(--color-muted)); stroke-width: 2; }
+.machine-cartoon .mc-eye-shine { fill: rgb(255 255 255 / 0.9); }
+.machine-cartoon .mc-cheek { fill: rgb(244 114 182 / 0.4); }
+.machine-cartoon .mc-detail { fill: none; stroke: rgb(var(--mm-outline)); stroke-width: 1.75; stroke-linecap: round; }
+.machine-cartoon .mc-cable { fill: none; stroke: rgb(var(--color-muted)); stroke-width: 2; stroke-linecap: round; }
 .machine-cartoon .mc-rod { stroke: rgb(var(--mc-frame)); stroke-width: 2; }
-.machine-cartoon .mc-floor { stroke: rgb(var(--color-border)); stroke-width: 3; stroke-linecap: round; }
+.machine-cartoon .mc-spot-in { stop-color: rgb(var(--mc-spot)); stop-opacity: var(--mc-spot-a); }
+.machine-cartoon .mc-spot-out { stop-color: rgb(var(--mc-spot)); stop-opacity: 0; }
+.machine-cartoon .mc-floor-in { stop-color: rgb(var(--color-border)); stop-opacity: 0.7; }
+.machine-cartoon .mc-floor-out { stop-color: rgb(var(--color-border)); stop-opacity: 0; }
+.machine-cartoon .mc-floor { stroke: rgb(var(--color-border)); stroke-width: 2; }
 .machine-cartoon .mc-belt { stroke: rgb(var(--mc-frame)); stroke-width: 2; stroke-dasharray: 6 18; }
+.machine-cartoon .mc-track { opacity: 0.4; transition: opacity 0.25s; }
+.machine-cartoon .mc-track[data-active] { opacity: 1; }
+.machine-cartoon .mc-track-line { fill: none; stroke: rgb(var(--color-accent)); stroke-width: 2.5; stroke-dasharray: 0.5 5; stroke-linecap: round; }
+.machine-cartoon .mc-track-start { fill: rgb(var(--color-accent)); }
+.machine-cartoon .mc-track-head { fill: rgb(var(--color-accent)); stroke: rgb(var(--color-accent)); stroke-width: 2; stroke-linejoin: round; }
 .machine-cartoon .mc-pin circle { fill: rgb(var(--color-accent)); stroke: rgb(var(--mm-outline)); stroke-width: 2; }
+.machine-cartoon .mc-pin .mc-pin-halo { stroke: none; opacity: 0.22; }
 .machine-cartoon .mc-pin text { fill: rgb(var(--color-accent-fg)); font-size: 12px; font-weight: 700; }
+.mc-phase-fill { background: rgb(var(--color-accent)); }
 .mc-pin-swatch {
   display: inline-flex; height: 1.25rem; width: 1.25rem; flex-shrink: 0; align-items: center; justify-content: center;
   border-radius: 9999px; background: rgb(var(--color-accent)); color: rgb(var(--color-accent-fg)); font-size: 0.75rem; font-weight: 700;
+}
+@keyframes mc-pin-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.22; }
+  50% { transform: scale(1.3); opacity: 0.04; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .machine-cartoon .mc-pin-halo { animation: mc-pin-pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 }
 
 /* Knoppen */

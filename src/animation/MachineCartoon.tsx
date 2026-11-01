@@ -1,9 +1,10 @@
 // Bewegende cartoon-uitleg per machine: poppetje + machine in zijaanzicht, fase-label en genummerde instelpunten.
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import type { Exercise } from '../types';
 import { nl } from '../content/nl';
-import { Figure, Floor, Pin } from './draw';
-import { joints, sample, type Pt } from './rig';
+import { Icon } from '../components/Icon';
+import { Figure, Pin, Stage, Track } from './draw';
+import { cycleMs, joints, sample, type Keyframe, type Pt } from './rig';
 import { SCENES, type Scene } from './scenes';
 
 const t = nl.cartoon;
@@ -60,7 +61,7 @@ export function MiniCartoon({ exercise, sceneId }: { exercise: Exercise; sceneId
   if (!scene) return null;
   return (
     <div ref={ref} className="machine-cartoon w-[112px]" data-mini-scene={scene.id}>
-      <CartoonSvg scene={scene} ms={ms} />
+      <CartoonSvg scene={scene} ms={ms} track={false} />
     </div>
   );
 }
@@ -101,6 +102,7 @@ function MachineCartoon({ scene, exercise }: { scene: Scene; exercise: Exercise 
       >
         <CartoonSvg scene={scene} ms={ms} pins={pins} />
       </button>
+      <PhaseBar frames={scene.frames} ms={ms} />
       <div className="flex items-center justify-between gap-2 px-1">
         <p className="text-sm font-semibold" data-testid="cartoon-phase">
           {label}
@@ -110,7 +112,8 @@ function MachineCartoon({ scene, exercise }: { scene: Scene; exercise: Exercise 
           className="btn-ghost min-h-[44px] shrink-0 px-2 text-sm"
           onClick={() => setPlaying((p) => !p)}
         >
-          {playing ? `⏸ ${t.pause}` : `▶ ${t.play}`}
+          <Icon name={playing ? 'pause' : 'play'} className="h-3.5 w-3.5" />
+          {playing ? t.pause : t.play}
         </button>
       </div>
       {pins.length > 0 && (
@@ -132,6 +135,38 @@ function MachineCartoon({ scene, exercise }: { scene: Scene; exercise: Exercise 
   );
 }
 
+/** Fases van de cyclus; opeenvolgende keyframes met hetzelfde label vormen één fase. */
+function phases(frames: Keyframe[]) {
+  const out: { label: string; ms: number }[] = [];
+  for (const f of frames) {
+    const last = out[out.length - 1];
+    if (last?.label === f.label) last.ms += f.ms;
+    else out.push({ label: f.label, ms: f.ms });
+  }
+  return out;
+}
+
+/** Tempo-balk: één segment per fase, breedte naar duur, het lopende segment vult zich. */
+function PhaseBar({ frames, ms }: { frames: Keyframe[]; ms: number }) {
+  const list = useMemo(() => phases(frames), [frames]);
+  if (list.length < 2) return null;
+  const total = cycleMs(frames);
+  let t0 = ((ms % total) + total) % total;
+  return (
+    <div className="mx-1 mt-1 flex gap-1" aria-hidden>
+      {list.map((p, i) => {
+        const fill = Math.min(1, Math.max(0, t0 / p.ms));
+        t0 -= p.ms;
+        return (
+          <div key={i} className="h-1.5 overflow-hidden rounded-full bg-surface-2" style={{ flexGrow: p.ms }}>
+            <div className="mc-phase-fill h-full rounded-full" style={{ width: `${fill * 100}%` }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Instelpunten die bij de instelvelden van deze oefening horen. */
 function scenePins(scene: Scene, exercise: Exercise) {
   const j0 = joints(scene.frames[0].pose);
@@ -141,16 +176,43 @@ function scenePins(scene: Scene, exercise: Exercise) {
     .filter((p) => p.labels.length > 0);
 }
 
+/** Punten van de bewegingsbaan: het werkende punt, bemonsterd over de werkfase. */
+function trackPoints(scene: Scene): Pt[] {
+  if (!scene.track) return [];
+  const { at, phase } = scene.track;
+  const start = scene.frames.slice(0, phase).reduce((s, f) => s + f.ms, 0);
+  const len = scene.frames[phase].ms;
+  const n = 24;
+  return Array.from({ length: n + 1 }, (_, i) =>
+    at(joints(sample(scene.frames, start + (len * Math.min(i, n - 0.01)) / n, !scene.linear).pose)),
+  );
+}
+
 /** De tekening zelf op tijdstip `ms` van de cyclus. */
-export function CartoonSvg({ scene, ms, pins = [] }: { scene: Scene; ms: number; pins?: { at: Pt }[] }) {
-  const j = joints(sample(scene.frames, ms, !scene.linear).pose);
+export function CartoonSvg({
+  scene,
+  ms,
+  pins = [],
+  track = true,
+}: {
+  scene: Scene;
+  ms: number;
+  pins?: { at: Pt }[];
+  track?: boolean;
+}) {
+  // useId bevat dubbele punten; die zijn lastig in url(#…).
+  const id = `mc${useId().replace(/:/g, '')}`;
+  const { pose, index } = sample(scene.frames, ms, !scene.linear);
+  const j = joints(pose);
   const j0 = joints(scene.frames[0].pose);
+  const path = useMemo(() => (track ? trackPoints(scene) : []), [scene, track]);
   return (
     <svg viewBox="0 0 300 240" className="h-auto w-full" aria-hidden>
-      <Floor />
+      <Stage id={id} />
       {scene.back?.(j, j0, ms)}
       <Figure j={j} />
       {scene.front?.(j, j0, ms)}
+      <Track p={path} active={index === scene.track?.phase} />
       {pins.map((p, i) => (
         <Pin key={i} at={p.at} n={i + 1} />
       ))}

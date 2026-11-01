@@ -59,6 +59,8 @@ const MIRROR = 'translate(200,0) scale(-1,1)';
 function Base() {
   return (
     <g className="mm-base">
+      {/* schaduw op de vloer */}
+      <ellipse cx="100" cy="421" rx="52" ry="8" className="mm-shadow" />
       {/* omtrek */}
       {LIMBS.map((l) => (
         <path key={`o${l.d}`} d={l.d} className="mm-outline-stroke" style={{ strokeWidth: l.w + 5 }} />
@@ -73,6 +75,7 @@ function Base() {
       <circle cx="160" cy="245" r="10" className="mm-skin" />
       <ellipse cx="76" cy="414" rx="17" ry="9" className="mm-shoe" />
       <ellipse cx="124" cy="414" rx="17" ry="9" className="mm-shoe" />
+      <path d="M62,418 Q76,424 90,418 M110,418 Q124,424 138,418" className="mm-sole" />
     </g>
   );
 }
@@ -109,11 +112,15 @@ function FrontFigure({ map }: { map: MuscleMapData }) {
       {/* hoofd */}
       <circle cx="100" cy="40" r="30" className="mm-skin" />
       <path d="M69,40 C64,6 136,6 131,40 C126,28 114,22 100,24 C86,22 74,28 69,40 Z" className="mm-hair" />
-      <circle cx="89" cy="42" r="3.5" className="mm-eye" />
-      <circle cx="111" cy="42" r="3.5" className="mm-eye" />
-      <path d="M90,54 Q100,62 110,54" className="mm-detail" />
-      <circle cx="82" cy="52" r="4" className="mm-cheek" />
-      <circle cx="118" cy="52" r="4" className="mm-cheek" />
+      <path d="M84,16 C92,12 104,12 112,15" className="mm-hair-shine" />
+      <path d="M83,33 Q89,30 95,33 M105,33 Q111,30 117,33" className="mm-face" />
+      <ellipse cx="89" cy="42" rx="3.5" ry="4.2" className="mm-eye" />
+      <ellipse cx="111" cy="42" rx="3.5" ry="4.2" className="mm-eye" />
+      <circle cx="90.3" cy="40.6" r="1.2" className="mm-eye-shine" />
+      <circle cx="112.3" cy="40.6" r="1.2" className="mm-eye-shine" />
+      <path d="M91,54 Q100,61 109,54" className="mm-face" />
+      <circle cx="81" cy="51" r="4.5" className="mm-cheek" />
+      <circle cx="119" cy="51" r="4.5" className="mm-cheek" />
     </g>
   );
 }
@@ -130,6 +137,7 @@ function BackFigure({ map }: { map: MuscleMapData }) {
       <circle cx="70" cy="42" r="6" className="mm-skin" />
       <circle cx="130" cy="42" r="6" className="mm-skin" />
       <path d="M70,40 C68,12 132,12 130,40 C128,56 118,64 100,64 C82,64 72,56 70,40 Z" className="mm-hair" />
+      <path d="M84,20 C92,15 106,15 114,19" className="mm-hair-shine" />
     </g>
   );
 }
@@ -138,7 +146,7 @@ export function MuscleMap({ map, size = 'lg', showLegend = size === 'lg', extraL
   const t = nl.muscles;
   const width = size === 'xs' ? 'w-[84px]' : size === 'sm' ? 'w-[120px]' : 'w-full max-w-[360px]';
   return (
-    <figure className={`muscle-map ${className}`}>
+    <figure className={`muscle-map ${size === 'lg' ? 'mm-animate' : ''} ${className}`}>
       <svg
         viewBox="0 0 420 452"
         role="img"

@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { nl } from '../content/nl';
 import { Bar, Dot, FLOOR, Seg, Stack } from './draw';
-import { add, along, dir, type Joints, type Keyframe, type Pose, type Pt } from './rig';
+import { add, along, dir, LEN, type Joints, type Keyframe, type Pose, type Pt } from './rig';
 
 export interface Scene {
   id: string;
@@ -17,6 +17,8 @@ export interface Scene {
   front?: (j: Joints, j0: Joints, ms: number) => ReactNode;
   /** Genummerde instelpunten; `keys` verwijzen naar settingFields van de oefening. */
   pins: { keys: string[]; at: (j0: Joints) => Pt }[];
+  /** Bewegingsbaan met pijl: het punt dat beweegt, getekend over de werkfase `phase` (index in `frames`). */
+  track?: { at: (j: Joints) => Pt; phase: number };
 }
 
 const t = nl.cartoon;
@@ -78,6 +80,7 @@ const legPress: Scene = {
   id: 'leg-press',
   frames: strength(lpStart, lpEnd, t.push),
   back: legPressMachine,
+  track: { at: (j) => add(j.ankle, [0, 24]), phase: 1 },
   pins: [
     { keys: ['seat'], at: (j) => add(along(j.hip, 215, 40), dir(305, 36)) },
     { keys: ['feet', 'weightPerLeg'], at: (j) => [j.ankle[0] + 9, j.ankle[1] - 42] },
@@ -137,6 +140,7 @@ const backExtensionMachine: Scene = {
     { keys: ['backpad'], at: () => [BE_PIVOT[0] - 14, BE_PIVOT[1] + 12] },
     { keys: [BIJSCHUIF], at: () => [38, STACK_TOP - 14] },
   ],
+  track: { at: (j) => along(j.hip, j.torso, LEN.torso + 54), phase: 1 },
 };
 
 // ---------------------------------------------------------------- Back extension (45°-bank)
@@ -171,6 +175,7 @@ const backExtensionBench: Scene = {
     { keys: ['padHeight'], at: (j) => add(along(j.hip, 315, 14), dir(45, 40)) },
     { keys: ['footrest'], at: (j) => add(j.ankle, [26, 26]) },
   ],
+  track: { at: (j) => along(j.hip, j.torso, LEN.torso + 54), phase: 2 },
 };
 
 // ---------------------------------------------------------------- Shoulder press
@@ -182,6 +187,7 @@ const SP_PIVOT: Pt = [82, 112];
 const shoulderPress: Scene = {
   id: 'shoulder-press',
   frames: strength(spStart, spEnd, t.push),
+  track: { at: (j) => add(j.hand, [16, 0]), phase: 1 },
   back: (j, j0) => (
     <>
       <Stack x={18} top={STACK_TOP} load={j.load} />
@@ -195,7 +201,7 @@ const shoulderPress: Scene = {
   ),
   pins: [
     { keys: ['seat'], at: () => [121, 208] },
-    { keys: ['grip'], at: (j) => [j.hand[0] + 22, j.hand[1] - 6] },
+    { keys: ['grip'], at: (j) => [j.hand[0] + 22, j.hand[1] + 24] },
     { keys: [BIJSCHUIF], at: () => [34, STACK_TOP - 14] },
   ],
 };
@@ -209,6 +215,7 @@ const CP_PIVOT: Pt = [92, 26];
 const chestPress: Scene = {
   id: 'chest-press',
   frames: strength(cpStart, cpEnd, t.push),
+  track: { at: (j) => add(j.hand, [0, -16]), phase: 1 },
   back: (j, j0) => (
     <>
       <Stack x={14} top={STACK_TOP} load={j.load} />
@@ -237,6 +244,7 @@ const LAT_PULLEY: Pt = [128, 16];
 const latPulldown: Scene = {
   id: 'lat-pulldown',
   frames: strength(latStart, latEnd, t.pull),
+  track: { at: (j) => add(j.hand, [22, 0]), phase: 1 },
   back: (j) => (
     <>
       <Seg p={[[208, FLOOR - 4], [208, 10], [LAT_PULLEY[0] - 8, 10]]} w={10} c="frame" />
@@ -259,7 +267,7 @@ const latPulldown: Scene = {
   },
   pins: [
     { keys: ['thighPad'], at: (j) => add(j.knee, [24, -36]) },
-    { keys: ['grip'], at: (j) => add(j.hand, [26, -2]) },
+    { keys: ['grip'], at: (j) => add(j.hand, [-24, 0]) },
     { keys: [BIJSCHUIF], at: () => [254, STACK_TOP - 14] },
   ],
 };
@@ -273,6 +281,7 @@ const ROW_PULLEY: Pt = [208, 150];
 const cableRow: Scene = {
   id: 'cable-row',
   frames: strength(rowStart, rowEnd, t.pull, [{ pose: { ...rowEnd, load: 1 }, ms: 1000, label: t.squeeze }]),
+  track: { at: (j) => add(j.hand, [0, 16]), phase: 1 },
   back: (j, j0) => {
     const px = j0.ankle[0] + 9;
     return (
