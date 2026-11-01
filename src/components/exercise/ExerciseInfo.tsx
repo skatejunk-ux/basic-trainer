@@ -4,13 +4,17 @@ import type { Exercise } from '../../types';
 import { BACK_EXTENSION_TYPE_KEY } from '../../types';
 import { BIJSCHUIFGEWICHT_KEY } from '../../coach';
 import { nl } from '../../content/nl';
+import { MachineCartoons } from '../../animation/MachineCartoon';
 
 const t = nl.workout;
 
-/** Setup, uitvoering, aandachtspunten, adem en tempo van een oefening. */
+/** Cartoon per machine, setup, uitvoering, aandachtspunten, adem en tempo van een oefening. */
 export function ExerciseInstructions({ exercise }: { exercise: Exercise }) {
   return (
     <>
+      <div className="mt-4">
+        <MachineCartoons exercise={exercise} />
+      </div>
       <HowTo title={t.setupTitle} items={exercise.setup} ordered />
       <HowTo title={t.cuesTitle} items={exercise.cues} />
       <HowTo title={t.mistakesTitle} items={exercise.mistakes} />

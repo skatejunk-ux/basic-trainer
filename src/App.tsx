@@ -3,6 +3,7 @@ import { AppShell } from './components/AppShell';
 import { Placeholder } from './components/Placeholder';
 import { nl } from './content/nl';
 import { DevMusclesPage } from './illustration/DevMusclesPage';
+import { DevMachinesPage } from './animation/DevMachinesPage';
 import { ExerciseDetail } from './features/exercise/ExerciseDetail';
 import { NewExercise } from './features/exercise/NewExercise';
 import { HistoryPage } from './features/history/HistoryPage';
@@ -30,6 +31,7 @@ export function App() {
           <Route path="oefening/nieuw" element={<NewExercise />} />
           <Route path="oefening/:id" element={<ExerciseDetail />} />
           <Route path="dev/muscles" element={<DevMusclesPage />} />
+          <Route path="dev/machines" element={<DevMachinesPage />} />
           <Route
             path="*"
             element={<Placeholder title={p.notFound.title} text="" backTo="/" backLabel={p.notFound.back} />}
