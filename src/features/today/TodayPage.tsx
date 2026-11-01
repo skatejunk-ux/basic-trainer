@@ -16,6 +16,7 @@ import {
 import { nl } from '../../content/nl';
 import { useWorkout } from '../workout/store';
 import { capFirst, displayName, formatDuration, tonnage } from '../workout/plan';
+import { InviteCard } from './InviteCard';
 import { daysSince, sessionsInWeek, weekStreak } from './week';
 
 const t = nl.today;
@@ -116,6 +117,8 @@ export function TodayPage() {
           </p>
         </Link>
       )}
+
+      <InviteCard />
 
       {remindBackup && (
         <div className="rounded-2xl border border-border bg-surface p-4">
