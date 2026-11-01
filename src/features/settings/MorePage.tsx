@@ -102,6 +102,15 @@ export function MorePage() {
       </Group>
 
       <Group title={t.appearance}>
+        {settings.showInvite && (
+          <Switch
+            icon="user-plus"
+            label={t.showInvite}
+            on={settings.showInvite}
+            hint={t.showInviteHint}
+            onChange={(v) => change({ showInvite: v })}
+          />
+        )}
         <div className="px-3 py-2">
           <Segmented
             options={(['dark', 'light', 'system'] as const).map((v) => ({ value: v, label: t.theme[v] }))}

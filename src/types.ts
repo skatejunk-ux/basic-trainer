@@ -172,6 +172,7 @@ export interface AppSettings {
   weekGoal: 3 | 4;
   lastBackupAt?: number;
   bodyWeightKg?: number; // voor de kcal-schatting (PLAN.md §12.2)
+  showInvite?: boolean; // uitnodigingslink alleen op toestellen die de eigenaar met de geheime link vrijgaf
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {

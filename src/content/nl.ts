@@ -137,6 +137,8 @@ export const nl = {
     weekGoal: 'Weekdoel',
     bodyWeight: 'Lichaamsgewicht (kg)',
     bodyWeightHint: 'Alleen voor de kcal-schatting na je training.',
+    showInvite: 'Uitnodigingslink op Vandaag',
+    showInviteHint: 'Alleen op dit toestel. Weer aanzetten kan via je geheime link.',
     perWeek: (n: number) => `${n}× per week`,
     appearance: 'Weergave',
     theme: { dark: 'Donker', light: 'Licht', system: 'Systeem' },

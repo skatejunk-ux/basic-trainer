@@ -1,8 +1,15 @@
-// Basic-Fit-uitnodiging (vriendenlink) bovenaan Vandaag: openen of delen.
+// Basic-Fit-uitnodiging (vriendenlink) bovenaan Vandaag: openen of delen. Alleen op vrijgegeven toestellen.
 import { nl } from '../../content/nl';
 import { Icon } from '../../components/Icon';
 
 export const INVITE_URL = 'https://member.basic-fit.com/friends/nl-NL/join/4HF7N9RG';
+
+/**
+ * Een web-app kan het Google-account van de telefoon niet uitlezen. Daarom tonen we de link alleen op
+ * toestellen die één keer `#/?eigenaar=<code>` openden; dat wordt lokaal onthouden (settings.showInvite).
+ * Let op: de repo is publiek, dus dit verbergt de link alleen uit beeld, het beveiligt hem niet.
+ */
+export const OWNER_CODE = 'margie-4hf7';
 
 const t = nl.today.invite;
 

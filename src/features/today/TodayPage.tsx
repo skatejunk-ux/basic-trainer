@@ -1,6 +1,6 @@
 // Vandaag (PLAN.md §6.1): volgende training, weekdoel, vorige training, backup-herinnering.
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { AppSettings, Exercise, Session, SetLog, Template } from '../../types';
 import { formatKg, nextTemplate } from '../../coach';
 import {
@@ -12,13 +12,14 @@ import {
   listTemplates,
   seedIfEmpty,
   shareOrDownloadBackup,
+  updateSettings,
 } from '../../db';
 import { nl } from '../../content/nl';
 import { Icon } from '../../components/Icon';
 import { useWorkout } from '../workout/store';
 import { capFirst, displayName, estimateMinutes, formatDuration, tonnage } from '../workout/plan';
 import { ScanButton } from '../scan/ScanButton';
-import { InviteCard } from './InviteCard';
+import { InviteCard, OWNER_CODE } from './InviteCard';
 import { daysSince, sessionsInWeek, weekDays, weekStreak } from './week';
 
 const t = nl.today;
@@ -41,6 +42,18 @@ export function TodayPage() {
   const [data, setData] = useState<Data | null>(null);
   const [chosen, setChosen] = useState<string | null>(null);
   const [backupDone, setBackupDone] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const unlock = params.get('eigenaar') === OWNER_CODE;
+  const [version, setVersion] = useState(0);
+
+  // Geheime eigenaar-link: ook als Vandaag al open staat (alleen de hash verandert dan).
+  useEffect(() => {
+    if (!unlock) return;
+    void updateSettings({ showInvite: true }).then(() => {
+      setParams({}, { replace: true });
+      setVersion((v) => v + 1);
+    });
+  }, [unlock, setParams]);
 
   useEffect(() => {
     let alive = true;
@@ -68,7 +81,7 @@ export function TodayPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [version]);
 
   if (!data) return <p className="text-muted">{t.loading}</p>;
 
@@ -93,7 +106,7 @@ export function TodayPage() {
         <ScanButton className="icon-btn border border-border/60 bg-surface text-fg" />
       </div>
 
-      <InviteCard />
+      {data.settings.showInvite && <InviteCard />}
 
       {data.active ? (
         <div className="card border-accent/50 bg-accent/10 p-4">
