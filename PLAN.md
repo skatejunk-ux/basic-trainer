@@ -12,7 +12,7 @@ Bron oefeningen: `oefeningen.txt` (+ 12-3-30 loopbandmethode uit https://www.you
 |---|---|
 | Platform | **PWA** (installeerbaar via Chrome op Android, werkt offline) |
 | Opslag | **Lokaal op de telefoon** (IndexedDB) + **export/import JSON** als backup. Geen account. |
-| Visuals | **Eigen geanimeerde SVG-figuren** per machine (offline, geen video's) |
+| Visuals | **Cartoon-spierkaart per oefening** (statische SVG: poppetje voor- en achteraanzicht, getrainde spiergroepen gekleurd). Animaties → backlog (§10). |
 | Niveau / ritme | Wat ervaring, **3–4x per week** |
 | Split | **Full-body A/B**, wisselend (A-B-A, B-A-B, …) |
 | Extra's v1 | **Rusttimer + trillen**, **slimme gewichtsuggesties** (progressie-coach) |
@@ -82,7 +82,7 @@ Alle oefeningen zitten in **elke week meerdere keren** in het schema. A = zwaard
 
 ## 4. Oefeningen-content (seed, NL)
 
-Iedere oefening heeft: naam, bewegingspatroon, spiergroepen, **instelvelden** (wat je aan de machine verstelt), **setup-stappen**, **uitvoeringscues**, **veelgemaakte fouten**, **ademhaling**, **tempo**, standaard **gewichtsstap** en **animatie-id**.
+Iedere oefening heeft: naam, bewegingspatroon, spiergroepen, **instelvelden** (wat je aan de machine verstelt), **setup-stappen**, **uitvoeringscues**, **veelgemaakte fouten**, **ademhaling**, **tempo**, standaard **gewichtsstap**, **spierkaart** (primaire/secundaire spiergroepen, §8) en een gereserveerde **animatie-id** voor later.
 
 > Instelvelden zijn vrij invulbare key/value-paren met voorgestelde labels. De gebruiker vult zelf het nummer in (bv. "Stoel: 4"). De app toont deze als chips bovenaan de oefening.
 >
@@ -97,8 +97,8 @@ Iedere oefening heeft: naam, bewegingspatroon, spiergroepen, **instelvelden** (w
 
 ### 4.2 Back Extension Machine (of 45° hyperextension) — Hinge · Hamstrings, bilspieren, onderrug
 - **Twee varianten** (veld `Type`, gekozen bij eerste gebruik, later wijzigbaar):
-  - **Machine (Technogym Lower Back, zittend)**: Zithoogte (nr), Rugkussen/startpositie (nr), Gewicht (kg). Stap 5 kg (2,5 met bijschuifgewicht). Eigen animatie `back-extension-machine`.
-  - **45°-bank**: Kussenhoogte (nr), Voetsteun (nr). Lichaamsgewicht; progressie via reps → tempo → 2 s pauze bovenaan. Animatie `back-extension-bench`.
+  - **Machine (Technogym Lower Back, zittend)**: Zithoogte (nr), Rugkussen/startpositie (nr), Gewicht (kg). Stap 5 kg (2,5 met bijschuifgewicht).
+  - **45°-bank**: Kussenhoogte (nr), Voetsteun (nr). Lichaamsgewicht; progressie via reps → tempo → 2 s pauze bovenaan.
 - **Setup (bank)**: 1) Steunkussen net **onder de heupbuiging**. 2) Hielen stevig onder/tegen de rol. 3) Armen gekruist voor de borst.
 - **Setup (machine)**: 1) Zithoogte zo dat het rugkussen op je schouderbladen ligt. 2) Voeten plat op de steun, dijen onder het kussen. 3) Armen gekruist voor de borst.
 - In Training B betekent "met gewicht" bij de bank-variant: **2 s pauze bovenaan + langzaam 3 s omlaag** (geen free weights).
@@ -162,7 +162,8 @@ interface Exercise {
   settingFields: { key: string; label: string; hint?: string }[];
   setup: string[]; cues: string[]; mistakes: string[]; breathing: string; tempo: string;
   defaultIncrementKg: number;
-  animationId: string;
+  muscleMap: { primary: MuscleId[]; secondary: MuscleId[] }; // §8
+  animationId: string;            // gereserveerd voor latere animaties (backlog)
   isCustom: boolean;
 }
 
@@ -229,7 +230,7 @@ Onderste navigatie: **Vandaag · Historie · Schema · Meer**.
 
 ### 6.2 Workout-modus (belangrijkste scherm, ontwerp voor één hand + bezweet)
 - Eén oefening per scherm; horizontaal swipen / knoppen vorige-volgende; voortgangsbalkje bovenaan (3/7).
-- Bovenaan **animatie** (klein, tik = groot/fullscreen met cues).
+- Bovenaan de **spierkaart** (klein; tik = groot met de cues).
 - **Instellingen-chips**: "Stoel 4 · Voeten midden · stap 5 kg" — tik = direct bewerken.
 - **Suggestie-regel**: "Vorige keer 3×8 @ 60 kg → vandaag **65 kg**, doel 6–8 reps" + kort waarom.
 - Setrijen: `[gewicht −/+] [reps −/+] [✓]`, vooraf ingevuld met de suggestie. Unilateraal: L- en R-rij per set.
@@ -253,10 +254,10 @@ Onderste navigatie: **Vandaag · Historie · Schema · Meer**.
 - Instelling: automatisch afwisselen A/B aan/uit; weekdoel 3 of 4.
 
 ### 6.5 Oefening-detail (bibliotheek)
-- Grote animatie + afspeelsnelheid (0,5× / 1×) + "toon setup" (genummerde pijlen naar instelpunten).
+- Grote **spierkaart** met legenda (primair / secundair).
 - Tabs: **Instructie** (setup/cues/fouten/adem) · **Mijn instellingen** · **Historie**.
 - Historie: lijst per datum (sets × reps @ kg) + **lijngrafiek**: beste gewicht en geschat 1RM (Epley) over tijd; bij unilateraal L vs. R.
-- Eigen oefening toevoegen (naam, patroon, velden; animatie = generiek poppetje).
+- Eigen oefening toevoegen (naam, patroon, velden; spiergroepen aanvinken voor de spierkaart).
 
 ### 6.6 Historie
 - Lijst/kalender van sessies; detail met alle sets; bewerken/verwijderen (met bevestiging).
@@ -290,17 +291,33 @@ Onderste navigatie: **Vandaag · Historie · Schema · Meer**.
 
 ---
 
-## 8. Animatiesysteem
+## 8. Spierkaart (cartoon-illustratie)
 
-Doel: herkenbare, lichtgewicht, offline animaties zonder externe assets.
+Doel: in één oogopslag zien **welke spieren een oefening traint**. Licht, offline, zonder externe assets. (Bewegende animaties zijn uitgesteld naar de backlog, §10.)
 
-- **Rig**: 2D-zijaanzicht poppetje (hoofd, romp, bovenarm, onderarm, dij, scheen, voet) met **forward kinematics**: een pose = gewrichtshoeken + heup-positie.
-- **Keyframes per oefening**: `[{ t: 0, pose, machine: {...} }, { t: 0.33, ... }, ...]`, lineair/ease-in-out geïnterpoleerd met `requestAnimationFrame`. Looptijd volgt het tempo (bv. 1 s concentrisch – 2 s excentrisch).
-- **Machine-tekening**: gestileerde SVG-vormen (zitting, rugleuning, platform, handgrepen, kabel, gewichtsstapel). **Bewegende delen hangen aan het eindpunt** van hand of voet (platform volgt voeten, handgreep volgt handen, gewichtsstapel gaat mee op/neer).
-- **Overlays**: fase-label ("Duw – 1 s" / "Terug – 2 s"), adem-icoon (in/uit), actieve spiergroep oplichten (segment-kleur), optioneel **setup-modus** met genummerde pijlen naar instelpunten ("① stoelhoogte").
-- `prefers-reduced-motion` → statische begin- en eindpose naast elkaar.
-- 9 animaties: leg-press, back-extension-machine, back-extension-bench, single-leg-press, shoulder-press, chest-press, lat-pulldown, cable-row, treadmill-walk (+ generiek voor eigen oefeningen).
-- Ontwikkelpagina `/#/dev/animations` die alle animaties naast elkaar toont (voor review).
+- **Eén herbruikbaar SVG-poppetje** in vrolijke cartoonstijl (ronde vormen, dikke contourlijn, vriendelijk gezichtje), **vooraanzicht en achteraanzicht naast elkaar**. Eigen tekening, geen merklogo's.
+- Het lichaam is opgedeeld in losse, benoemde spiervlakken (`<path id>` per `MuscleId`, links en rechts):
+  `chest, front-delts, side-delts, rear-delts, biceps, triceps, forearms, abs, obliques, traps, mid-back, lats, lower-back, glutes, quads, hamstrings, adductors, calves`.
+- Kleuren: **primair** = felle accentkleur, **secundair** = dezelfde kleur lichter, rest = neutraal grijs. Via CSS-variabelen, zodat het in dark en light theme werkt.
+- Component: `<MuscleMap primary={[...]} secondary={[...]} size="sm" | "lg" showLegend? />`. Legenda in het Nederlands, bv. "Primair: Quadriceps, Bilspieren · Secundair: Hamstrings".
+- Klein formaat (~120 px) voor in de workout-kaart, groot (~360 px) in het oefening-detail.
+- Optioneel bij de oefeningnaam: een **emoji/icoon per bewegingspatroon** (🦵 duwen benen, 🍑 hinge, 💪 duwen, 🧲 trekken, 🚶 lopen) voor extra herkenbaarheid.
+
+**Spiermapping (seed):**
+
+| Oefening | Primair | Secundair |
+|---|---|---|
+| Seated Leg Press | quads, glutes | hamstrings, adductors |
+| Back Extension | hamstrings, glutes, lower-back | – |
+| Single-Leg Leg Press | quads, glutes | hamstrings, adductors, abs |
+| Seated Shoulder Press | front-delts, side-delts | triceps, traps |
+| Seated Chest Press | chest | front-delts, triceps |
+| Lat Pulldown | lats | biceps, mid-back, rear-delts |
+| Seated Cable Row | mid-back, lats | biceps, rear-delts, forearms |
+| Loopband 12-3-30 | glutes, calves, hamstrings | quads, lower-back (+ label "Conditie ❤️") |
+
+- Nederlandse namen: borst, voorkant schouders, zijkant schouders, achterkant schouders, biceps, triceps, onderarmen, buikspieren, schuine buikspieren, trapezius, middenrug, brede rugspier (lats), onderrug, bilspieren, quadriceps, hamstrings, binnenkant dij, kuiten.
+- Ontwikkelpagina `/#/dev/muscles` die alle 8 oefeningen met hun spierkaart toont (voor review).
 
 ---
 
@@ -312,7 +329,7 @@ Volgorde & parallellisatie:
 WP0 Scaffold + contracten ──┬─> WP1 Data & seed ──┬─> WP4 Workout-modus + rusttimer
                             │                     ├─> WP5 Schema-editor + oefening-detail
                             ├─> WP2 Progressie-coach (parallel, alleen types nodig)
-                            └─> WP3 Animaties (parallel, onafhankelijk)
+                            └─> WP3 Spierkaart (parallel, onafhankelijk)
                                                   └─> WP6 Historie + grafiek + backup
                                          alles ──> WP7 QA, PWA-audit, deploy
 ```
@@ -322,7 +339,7 @@ WP0 Scaffold + contracten ──┬─> WP1 Data & seed ──┬─> WP4 Workou
 | **WP0** | Vite/React/TS/Tailwind/PWA/Router/Vitest/Playwright opzetten; `src/types.ts` met het datamodel uit §5; app-shell met onderste navigatie en lege routes; designtokens (dark/light); GitHub Actions workflow voor Pages; `README`. | `npm run dev/build/test` slagen; lege app installeerbaar als PWA (manifest + iconen) | standard |
 | **WP1** | Dexie-schema + repositories (CRUD), seed-data uit §3 en §4 (letterlijk NL), export/import + validatie, `storage.persist()`. Unit-tests. | Seed laadt bij eerste start; export→import round-trip test groen | standard |
 | **WP2** | `src/coach/` progressie-engine uit §7 + volgende-template-logica, met uitgebreide Vitest-cases (increase/hold/deload/first/bodyweight/unilateral/cardio/A↔B bucket). | ≥ 90% coverage op de module, alle regels uit §7 getest | deep (logica moet kloppen) |
-| **WP3** | `src/animation/`: rig, interpolator, `<ExerciseAnimation id tempo speed showSetup />`, 9 animaties (§8) + generiek, reduced-motion, dev-galerij. | Alle 9 herkenbaar in de dev-galerij; 60 fps op mobiel; geen externe assets | deep of long (veel visueel itereren) |
+| **WP3** | `src/illustration/`: cartoon-SVG-poppetje voor/achter met spiervlakken, `<MuscleMap />` (§8), `MuscleId`-type + NL-namen, `muscleMap` toevoegen aan de seed-oefeningen (§8-tabel), dev-pagina `/#/dev/muscles`. | Alle 8 oefeningen tonen de juiste spieren; leesbaar op 120 px en 360 px; dark + light; screenshots bekeken | standard (klein, afgebakend) |
 | **WP4** | Workout-modus §6.2 + rusttimer §6.3 (Zustand store, autosave per set, wake lock, vibratie, "machine bezet", herordenen, cardio-timer, samenvatting). | Volledige A-training te doorlopen in Playwright op Pixel-viewport; herstel na reload werkt | deep |
 | **WP5** | Schema §6.4 (dnd-kit) + oefening-detail §6.5 (instructie, instellingen bewerken) + eigen oefening toevoegen. | Volgorde slepen blijft bewaard; instellingen-chips verschijnen in workout | standard |
 | **WP6** | Historie §6.6, lijngrafiek per oefening, Vandaag-scherm §6.1, Meer/backup §6.7, backup-herinnering. | Grafiek toont seed-historie; export deelbaar via share-sheet | standard |
@@ -340,6 +357,7 @@ WP0 Scaffold + contracten ──┬─> WP1 Data & seed ──┬─> WP4 Workou
 
 ## 10. Backlog (na v1)
 
+- **Animaties per machine** (uitgesteld op 2026-11-01): 2D-poppetje met forward kinematics en keyframes op tempo, gestileerde machine waarvan de bewegende delen meebewegen, fase-label ("Duw – 1 s"), adem-icoon, setup-modus met genummerde pijlen, `prefers-reduced-motion`. 9 animaties (incl. 2 voor back extension). `animationId` staat al in de data. Bouw dit in kleine stukken (eerst rig + 1 oefening, dan per 2–3 oefeningen) met tussentijdse commits.
 - **Records & badges**: PR-detectie met confetti, streaks, mijlpalen ("100 trainingen", "1 ton getild").
 - **Uitgebreide stats**: volume per spiergroep per week, tonnage-vergelijkingen ("je tilde vandaag een olifant 🐘"), heatmap-kalender.
 - **Club-profielen**: andere instellingen per Basic-Fit vestiging (andere machinemerken).
@@ -354,7 +372,7 @@ WP0 Scaffold + contracten ──┬─> WP1 Data & seed ──┬─> WP4 Workou
 ## 11. Besloten open punten (2026-11-01)
 
 1. **Machinemerk**: Technogym → instelvelden volgens §4-conventie (zithoogte, rugleuning, startpositie, bijschuifgewicht).
-2. **Back Extension**: type onbekend → beide varianten ondersteund, keuze bij eerste gebruik (§4.2). WP3 maakt dus **9 animaties** (2 voor back extension).
+2. **Back Extension**: type onbekend → beide varianten ondersteund, keuze bij eerste gebruik (§4.2). Beide varianten trainen dezelfde spieren, dus één spierkaart.
 3. **Startgewichten**: tijdens de eerste training (§7 "first").
 4. **Hosting**: `github.com/skatejunk-ux/basic-trainer`, publiek, GitHub Pages via Actions. Repo aanmaken gebeurt in WP0 **pas na bevestiging**. `gh` heeft twee accounts; het werkaccount `JobVanDonselaar` is actief. Gebruik voor deze repo daarom expliciet `skatejunk-ux` (bv. `gh auth switch --user skatejunk-ux` vóór repo-acties, daarna terugzetten), en zet lokaal `git config user.email skatejunk@gmail.com` in deze repo.
 5. **Loopband**: direct 12-3-30, geen opbouwplan.
