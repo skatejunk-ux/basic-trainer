@@ -22,16 +22,9 @@ test('laadt de app en navigeert door de 4 tabs', async ({ page }) => {
   }
 });
 
-test('Vandaag toont de Basic-Fit-uitnodiging als QR-code', async ({ page }) => {
+test('Vandaag toont de Basic-Fit-uitnodiging bovenaan', async ({ page }) => {
   await page.goto('./');
-  const card = page.getByTestId('invite-card');
-  await expect(
-    card.getByRole('img', { name: /QR-code: https:\/\/member\.basic-fit\.com\/friends\/nl-NL\/join\/4HF7N9RG/ }),
-  ).toBeVisible();
-  await expect(card.getByRole('link', { name: /Link openen/ })).toHaveAttribute(
-    'href',
-    'https://member.basic-fit.com/friends/nl-NL/join/4HF7N9RG',
-  );
-  await card.getByRole('button', { name: 'QR-code groot tonen' }).click();
-  await expect(page.getByRole('dialog', { name: 'Scan deze code' })).toBeVisible();
+  const link = page.getByTestId('invite-card').getByRole('link', { name: /Nodig een vriend uit/ });
+  await expect(link).toHaveAttribute('href', 'https://member.basic-fit.com/friends/nl-NL/join/4HF7N9RG');
+  await expect(link).toHaveAttribute('target', '_blank');
 });

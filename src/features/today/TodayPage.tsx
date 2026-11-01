@@ -83,6 +83,8 @@ export function TodayPage() {
     <section className="space-y-4">
       <h1 className="text-2xl font-bold">{nl.pages.today.title}</h1>
 
+      <InviteCard />
+
       {data.active ? (
         <div className="rounded-2xl border border-accent/50 bg-accent/10 p-4">
           <p className="mb-3">{t.resumeText(templateName(data.active.templateId))}</p>
@@ -117,8 +119,6 @@ export function TodayPage() {
           </p>
         </Link>
       )}
-
-      <InviteCard />
 
       {remindBackup && (
         <div className="rounded-2xl border border-border bg-surface p-4">
