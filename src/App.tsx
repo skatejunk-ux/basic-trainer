@@ -3,6 +3,8 @@ import { AppShell } from './components/AppShell';
 import { Placeholder } from './components/Placeholder';
 import { nl } from './content/nl';
 import { DevMusclesPage } from './illustration/DevMusclesPage';
+import { TodayPage } from './features/today/TodayPage';
+import { WorkoutPage } from './features/workout/WorkoutPage';
 
 const p = nl.pages;
 
@@ -10,12 +12,12 @@ export function App() {
   return (
     <HashRouter>
       <Routes>
+        <Route path="workout" element={<WorkoutPage />} />
         <Route element={<AppShell />}>
-          <Route index element={<Placeholder title={p.today.title} text={p.today.placeholder} />} />
+          <Route index element={<TodayPage />} />
           <Route path="historie" element={<Placeholder title={p.history.title} text={p.history.placeholder} />} />
           <Route path="schema" element={<Placeholder title={p.schema.title} text={p.schema.placeholder} />} />
           <Route path="meer" element={<Placeholder title={p.more.title} text={p.more.placeholder} />} />
-          <Route path="workout" element={<Placeholder title={p.workout.title} text={p.workout.placeholder} />} />
           <Route path="oefening/:id" element={<Placeholder title={p.exercise.title} text={p.exercise.placeholder} />} />
           <Route path="dev/muscles" element={<DevMusclesPage />} />
           <Route

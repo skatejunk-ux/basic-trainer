@@ -118,6 +118,8 @@ export interface Session {
   endedAt?: number;
   status: SessionStatus;
   itemOrder: string[]; // volgorde zoals feitelijk uitgevoerd (incl. "machine bezet"-verschuivingen)
+  skippedItemIds?: string[]; // overgeslagen template-items (workout-modus)
+  exerciseOverrides?: Record<string, string>; // templateItemId → vervangende exerciseId (alleen deze sessie)
   notes?: string;
 }
 
@@ -142,6 +144,7 @@ export interface CardioLog {
   id: string;
   sessionId: string;
   exerciseId: string;
+  templateItemId?: string; // welk template-item (warming-up of 12-3-30)
   minutes: number;
   inclinePct: number;
   speedKmh: number;
