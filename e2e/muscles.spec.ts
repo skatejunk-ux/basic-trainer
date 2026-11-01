@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-test('dev-pagina toont de spierkaart van alle 8 oefeningen', async ({ page }) => {
+test('dev-pagina toont de spierkaart van alle 18 oefeningen', async ({ page }) => {
   await page.goto('./#/dev/muscles');
   await expect(page.getByRole('heading', { name: 'Spierkaarten (dev)' })).toBeVisible();
-  await expect(page.locator('[data-exercise]')).toHaveCount(8);
+  await expect(page.locator('[data-exercise]')).toHaveCount(18);
 
   const legPress = page.locator('[data-exercise="leg-press"]').first();
   await expect(legPress.getByRole('img').first()).toHaveAttribute('aria-label', /Primair: Quadriceps, Bilspieren/);

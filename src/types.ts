@@ -8,6 +8,16 @@ export type Pattern =
   | 'horizontal-press'
   | 'vertical-pull'
   | 'horizontal-row'
+  | 'knee-extension'
+  | 'knee-flexion'
+  | 'calf'
+  | 'hip-abduction'
+  | 'hip-adduction'
+  | 'chest-fly'
+  | 'rear-fly'
+  | 'elbow-flexion'
+  | 'elbow-extension'
+  | 'trunk-flexion'
   | 'walk';
 
 /** Back Extension-variant (PLAN.md §4.2): machine met gewichtsstapel of 45-graden-bank. */

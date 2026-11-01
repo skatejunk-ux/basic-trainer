@@ -2,7 +2,7 @@
 // de back extension heeft er twee (machine en 45°-bank). Tempo volgt de seed (bv. 1 s duwen – 2 s terug).
 import type { ReactNode } from 'react';
 import { nl } from '../content/nl';
-import { Bar, Dot, FLOOR, Seg, Stack } from './draw';
+import { Bar, Dot, FLOOR, FRONT, FrontFigure, frontAt, lerpPt, Seg, Stack, type FrontSide } from './draw';
 import { add, along, dir, LEN, type Joints, type Keyframe, type Pose, type Pt } from './rig';
 
 export interface Scene {
@@ -19,6 +19,8 @@ export interface Scene {
   pins: { keys: string[]; at: (j0: Joints) => Pt }[];
   /** Bewegingsbaan met pijl: het punt dat beweegt, getekend over de werkfase `phase` (index in `frames`). */
   track?: { at: (j: Joints) => Pt; phase: number };
+  /** Eigen poppetje i.p.v. het zijaanzicht (vooraanzicht-scènes; de beweging zit dan in `j.load`). */
+  figure?: (j: Joints) => ReactNode;
 }
 
 const t = nl.cartoon;
@@ -59,8 +61,9 @@ const LP_HIP: Pt = [128, 160];
 const lpStart: Pose = { hip: LP_HIP, torso: 215, uArm: -5, fArm: 30, thigh: 135, shin: 45, foot: 180 };
 const lpEnd: Pose = { ...lpStart, thigh: 97, shin: 83 };
 
-function legPressMachine(j: Joints, j0: Joints) {
-  const px = j.ankle[0] + 9;
+/** Leg press; `plate` = midden van het voetplatform (standaard bij de enkel). */
+function legPressMachine(j: Joints, j0: Joints, plate: Pt = [j.ankle[0] + 9, j.ankle[1]]) {
+  const px = plate[0];
   return (
     <>
       <Stack x={22} top={STACK_TOP} load={j.load} />
@@ -69,8 +72,8 @@ function legPressMachine(j: Joints, j0: Joints) {
       <Seg p={[along(j0.hip, 215, 20), [92, FLOOR - 4]]} w={8} c="frame" />
       <Seat x0={104} x1={150} y={177} />
       <Backrest hip={j0.hip} torso={215} from={8} to={66} />
-      <Seg p={[[px, j.ankle[1] - 8], [264, j.ankle[1] - 8]]} w={6} c="frame" />
-      <Seg p={[[px, j.ankle[1] - 30], [px, j.ankle[1] + 10]]} w={8} c="pad" />
+      <Seg p={[[px, plate[1] - 8], [264, plate[1] - 8]]} w={6} c="frame" />
+      <Seg p={[[px, plate[1] - 30], [px, plate[1] + 10]]} w={8} c="pad" />
       <Bar at={[j0.hand[0] + 2, j0.hand[1] + 6]} a={90} len={16} w={6} c="grip" />
     </>
   );
@@ -79,7 +82,7 @@ function legPressMachine(j: Joints, j0: Joints) {
 const legPress: Scene = {
   id: 'leg-press',
   frames: strength(lpStart, lpEnd, t.push),
-  back: legPressMachine,
+  back: (j, j0) => legPressMachine(j, j0),
   track: { at: (j) => add(j.ankle, [0, 24]), phase: 1 },
   pins: [
     { keys: ['seat'], at: (j) => add(along(j.hip, 215, 40), dir(305, 36)) },
@@ -342,6 +345,347 @@ const treadmill: Scene = {
   pins: [{ keys: ['inclinePct', 'speedKmh', 'minutes'], at: () => [248, 52] }],
 };
 
+/** Krachtcyclus met 1 s vasthouden in de eindpositie (isolatie-oefeningen). */
+const withHold = (start: Pose, end: Pose, work: string, hold: string = t.hold) =>
+  strength(start, end, work, [{ pose: { ...end, load: 1 }, ms: 1000, label: hold }]);
+
+/** Absolute hoek van het scheenbeen (knie → enkel). */
+const shinAngle = (j: Joints) => (Math.atan2(j.ankle[0] - j.knee[0], j.ankle[1] - j.knee[1]) * 180) / Math.PI;
+
+/** Handen aan de handgrepen naast de zitting. */
+const holdSeat = { uArm: -10, fArm: 20 };
+
+// ---------------------------------------------------------------- Leg extension
+const LE_HIP: Pt = [130, 160];
+const leStart: Pose = { hip: LE_HIP, torso: 195, ...holdSeat, thigh: 90, shin: 5 };
+const leEnd: Pose = { ...leStart, shin: 85 };
+/** Enkelkussen voor op het scheenbeen. */
+const leRoller = (j: Joints) => add(along(j.knee, shinAngle(j), 38), dir(shinAngle(j) + 90, 12));
+
+const legExtension: Scene = {
+  id: 'leg-extension',
+  frames: withHold(leStart, leEnd, t.extend),
+  track: { at: leRoller, phase: 1 },
+  back: (j, j0) => (
+    <>
+      <Stack x={22} top={STACK_TOP} load={j.load} />
+      <Seat x0={108} x1={172} y={177} />
+      <Backrest hip={j0.hip} torso={195} from={8} to={66} />
+      <Seg p={[j.knee, leRoller(j)]} w={6} c="frame" />
+      <Bar at={[j0.hand[0] + 2, j0.hand[1] + 6]} a={90} len={16} w={6} c="grip" />
+    </>
+  ),
+  front: (j) => (
+    <>
+      <Dot at={leRoller(j)} r={8} c="pad" />
+      <Dot at={j.knee} r={4} c="grip" />
+    </>
+  ),
+  pins: [
+    { keys: ['backrest'], at: (j) => add(along(j.hip, 195, 50), dir(285, 36)) },
+    { keys: ['roller'], at: (j) => add(leRoller(j), [18, 10]) },
+    { keys: ['range'], at: (j) => add(j.knee, [4, -26]) },
+    { keys: [BIJSCHUIF], at: () => [38, STACK_TOP - 14] },
+  ],
+};
+
+// ---------------------------------------------------------------- Seated leg curl
+const LC_HIP: Pt = [104, 160];
+const lcStart: Pose = { hip: LC_HIP, torso: 195, ...holdSeat, thigh: 90, shin: 85 };
+const lcEnd: Pose = { ...lcStart, shin: -5 };
+/** Enkelkussen achter/onder de kuit. */
+const lcRoller = (j: Joints) => add(along(j.knee, shinAngle(j), 38), dir(shinAngle(j) - 90, 12));
+const lcThighPad = (j: Joints) => add(along(j.hip, 90, 34), [0, -17]);
+const LC_COLUMN = 244;
+
+const legCurl: Scene = {
+  id: 'leg-curl',
+  frames: withHold(lcStart, lcEnd, t.curl),
+  track: { at: lcRoller, phase: 1 },
+  back: (j, j0) => (
+    <>
+      <Stack x={254} top={STACK_TOP} load={j.load} />
+      <Seg p={[[LC_COLUMN, FLOOR - 4], [LC_COLUMN, 112], [lcThighPad(j0)[0] + 6, 112]]} w={8} c="frame" />
+      <Seat x0={74} x1={150} y={177} />
+      <Backrest hip={j0.hip} torso={195} from={8} to={66} />
+      <Seg p={[j.knee, lcRoller(j)]} w={6} c="frame" />
+      <Bar at={[j0.hand[0] + 2, j0.hand[1] + 6]} a={90} len={16} w={6} c="grip" />
+    </>
+  ),
+  front: (j, j0) => {
+    const pad = lcThighPad(j0);
+    return (
+      <>
+        <Dot at={lcRoller(j)} r={8} c="pad" />
+        <Dot at={j.knee} r={4} c="grip" />
+        <Seg p={[pad, [pad[0] + 6, 112]]} w={6} c="frame" />
+        <Bar at={pad} a={90} len={22} w={13} c="pad" />
+      </>
+    );
+  },
+  pins: [
+    { keys: ['backrest'], at: (j) => add(along(j.hip, 195, 50), dir(285, 36)) },
+    { keys: ['thighPad'], at: (j) => add(lcThighPad(j), [-22, -12]) },
+    { keys: ['roller'], at: (j) => add(lcRoller(j), [16, 14]) },
+    { keys: [BIJSCHUIF], at: () => [270, STACK_TOP - 14] },
+  ],
+};
+
+// ---------------------------------------------------------------- Calf press (op de leg press)
+const cpfStart: Pose = { ...lpEnd, foot: 205 };
+const cpfEnd: Pose = { ...lpEnd, foot: 135 };
+/** Bal van de voet tegen de onderrand van het platform, hielen vrij. */
+const calfPlate = (j: Joints): Pt => [j.toe[0] + 6, j.toe[1] - 6];
+
+const calfPress: Scene = {
+  id: 'calf-press',
+  frames: withHold(cpfStart, cpfEnd, t.toes),
+  back: (j, j0) => legPressMachine(j, j0, calfPlate(j)),
+  track: { at: (j) => add(j.toe, [0, -20]), phase: 1 },
+  pins: [
+    { keys: ['seat'], at: (j) => add(along(j.hip, 215, 40), dir(305, 36)) },
+    { keys: ['feet'], at: (j) => [calfPlate(j)[0], calfPlate(j)[1] - 42] },
+    { keys: [BIJSCHUIF], at: () => [38, STACK_TOP - 14] },
+  ],
+};
+
+// ---------------------------------------------------------------- Arm curl / arm extension (preacher-kussen)
+const AC_HIP: Pt = [100, 172];
+/** Bovenarm absoluut 45° schuin naar voren-omlaag over het kussen. */
+const AC_UA = 45;
+const acBent: Pose = { hip: AC_HIP, torso: 160, uArm: AC_UA - 340, fArm: 125, ...seated };
+const acStraight: Pose = { ...acBent, fArm: 15 };
+
+function armMachine(j: Joints, j0: Joints) {
+  const pad = add(along(j0.shoulder, AC_UA, 30), dir(AC_UA - 90, 10));
+  const foot = along(pad, AC_UA, 25);
+  return (
+    <>
+      <Stack x={240} top={STACK_TOP} load={j.load} />
+      <Seat x0={76} x1={124} y={190} />
+      <Seg p={[foot, [foot[0] + 8, FLOOR - 4]]} w={8} c="frame" />
+      <Seg p={[[foot[0] - 12, FLOOR - 4], [foot[0] + 28, FLOOR - 4]]} w={8} c="frame" />
+      <Bar at={pad} a={AC_UA} len={50} w={13} c="pad" />
+      <Seg p={[j0.elbow, j.hand]} w={6} c="frame" />
+      <Bar at={j.hand} a={0} len={14} w={7} c="grip" />
+    </>
+  );
+}
+
+const armPins: Scene['pins'] = [
+  { keys: ['seat'], at: () => [100, 208] },
+  { keys: ['range'], at: (j) => add(j.elbow, [-30, 30]) },
+  { keys: [BIJSCHUIF], at: () => [256, STACK_TOP - 14] },
+];
+
+const armCurl: Scene = {
+  id: 'arm-curl',
+  frames: strength(acStraight, acBent, t.curl),
+  back: armMachine,
+  front: (_j, j0) => <Dot at={j0.elbow} r={4} c="grip" />,
+  track: { at: (j) => add(j.hand, [14, 0]), phase: 1 },
+  pins: armPins,
+};
+
+const armExtension: Scene = {
+  ...armCurl,
+  id: 'arm-extension',
+  frames: strength({ ...acBent, fArm: 115 }, acStraight, t.extend),
+};
+
+// ---------------------------------------------------------------- Abdominal crunch
+const AB_HIP: Pt = [118, 172];
+const abStart: Pose = { hip: AB_HIP, torso: 182, ...crossed, ...seated };
+const abEnd: Pose = { ...abStart, torso: 150 };
+/** Borstkussen op een zijarm die (zoals bij de machine) om de heup draait. */
+const abPad = (j: Joints) => add(along(j.hip, j.torso, 52), dir(j.torso - 90, 24));
+const abRoller = (j: Joints) => add(j.ankle, [12, -10]);
+
+const abCrunch: Scene = {
+  id: 'ab-crunch',
+  frames: strength(abStart, abEnd, t.crunch),
+  back: (j) => (
+    <>
+      <Stack x={18} top={STACK_TOP} load={j.load} />
+      <Seat x0={94} x1={142} y={190} />
+    </>
+  ),
+  front: (j, j0) => {
+    const r = abRoller(j0);
+    return (
+      <>
+        <Seg p={[r, [r[0] + 14, r[1]], [r[0] + 14, FLOOR - 4]]} w={6} c="frame" />
+        <Dot at={r} r={7} c="pad" />
+        <Seg p={[j.hip, abPad(j)]} w={6} c="frame" />
+        <Dot at={j.hip} r={5} c="grip" />
+        <Bar at={abPad(j)} a={j.torso} len={30} w={13} c="pad" />
+      </>
+    );
+  },
+  pins: [
+    { keys: ['seat'], at: () => [118, 208] },
+    { keys: ['footrest'], at: (j) => add(abRoller(j), [26, -18]) },
+    { keys: [BIJSCHUIF], at: () => [34, STACK_TOP - 14] },
+  ],
+  track: { at: (j) => add(along(j.hip, j.torso, LEN.torso + 10), dir(j.torso - 90, 44)), phase: 1 },
+};
+
+// ---------------------------------------------------------------- Vooraanzicht: fly, rear delt, abductor, adductor
+// De pose zelf staat stil; `load` (0 → 1 in de werkfase) stuurt de zijwaartse beweging.
+const FRONT_POSE: Pose = { hip: [FRONT.cx, FRONT.hip], torso: 180, uArm: 0, fArm: 0, ...seated };
+const frontFrames = (work: string) => withHold(FRONT_POSE, FRONT_POSE, work);
+const STACK_X = 256;
+
+const mix = (a: FrontSide, b: FrontSide) => (k: number): FrontSide => ({
+  elbow: lerpPt(a.elbow, b.elbow, k),
+  hand: lerpPt(a.hand, b.hand, k),
+  knee: lerpPt(a.knee, b.knee, k),
+  ankle: lerpPt(a.ankle, b.ankle, k),
+});
+
+/** Seat voor het vooraanzicht. */
+function FrontSeat() {
+  const { cx } = FRONT;
+  return (
+    <>
+      <Seg p={[[cx, 186], [cx, FLOOR - 4]]} w={10} c="frame" />
+      <Seg p={[[cx - 40, FLOOR - 4], [cx + 40, FLOOR - 4]]} w={8} c="frame" />
+      <Seg p={[[cx - 34, 186], [cx + 34, 186]]} w={12} c="pad" />
+    </>
+  );
+}
+
+// Fly-machine: armen aan hendels die van draaipunten boven de schouders hangen.
+const flyLegs = { knee: [22, 188] as Pt, ankle: [24, 216] as Pt };
+const flyOpen: FrontSide = { elbow: [56, 112], hand: [84, 106], ...flyLegs };
+const flyClosed: FrontSide = { elbow: [34, 122], hand: [8, 118], ...flyLegs };
+const FLY_PIVOT_DX = 36;
+
+function flyMachine(side: FrontSide, load: number, back: boolean) {
+  const { cx } = FRONT;
+  return (
+    <>
+      <Stack x={STACK_X} top={STACK_TOP} load={load} />
+      <Seg p={[[cx - FLY_PIVOT_DX - 6, 26], [STACK_X + 16, 26], [STACK_X + 16, STACK_TOP]]} w={10} c="frame" />
+      <rect
+        x={cx - (back ? 24 : 30)}
+        y={back ? 92 : 58}
+        width={back ? 48 : 60}
+        height={back ? 76 : 114}
+        rx={12}
+        className="mc-fill mc-pad"
+      />
+      <FrontSeat />
+      {[-1, 1].map((s) => {
+        const pivot = frontAt([FLY_PIVOT_DX, 56], s);
+        const hand = frontAt(side.hand, s);
+        return (
+          <g key={s}>
+            <Seg p={[frontAt([FLY_PIVOT_DX, 26], s), pivot]} w={8} c="frame" />
+            <Seg p={[pivot, add(hand, [0, -12])]} w={6} c="frame" />
+            <Dot at={pivot} r={5} c="grip" />
+            <Bar at={hand} a={0} len={24} w={7} c="grip" />
+          </g>
+        );
+      })}
+    </>
+  );
+}
+
+const flyPins: Scene['pins'] = [
+  { keys: ['seat'], at: () => [FRONT.cx - 52, 194] },
+  { keys: ['range'], at: () => frontAt([FLY_PIVOT_DX + 18, 48]) },
+  { keys: [BIJSCHUIF], at: () => [STACK_X + 16, STACK_TOP - 14] },
+];
+
+const flySide = mix(flyOpen, flyClosed);
+const pecFly: Scene = {
+  id: 'pec-fly',
+  frames: frontFrames(t.close),
+  figure: (j) => <FrontFigure side={flySide(j.load)} />,
+  back: (j) => flyMachine(flySide(j.load), j.load, false),
+  track: { at: (j) => frontAt(add(flySide(j.load).hand, [0, 16])), phase: 1 },
+  pins: flyPins,
+};
+
+const rdLegs = { knee: [20, 190] as Pt, ankle: [22, 218] as Pt };
+const rdSide = mix(
+  { elbow: [34, 114], hand: [8, 114], ...rdLegs },
+  { elbow: [56, 108], hand: [88, 106], ...rdLegs },
+);
+const rearDelt: Scene = {
+  id: 'rear-delt',
+  frames: frontFrames(t.open),
+  figure: (j) => <FrontFigure side={rdSide(j.load)} back />,
+  back: (j) => flyMachine(rdSide(j.load), j.load, true),
+  track: { at: (j) => frontAt(add(rdSide(j.load).hand, [0, 16])), phase: 1 },
+  pins: flyPins,
+};
+
+// Abductor/adductor: kussens tegen de knieën op hendels die onder de zitting draaien.
+const legArms = { elbow: [34, 140] as Pt, hand: [40, 170] as Pt };
+const legsClosed: FrontSide = { ...legArms, knee: [18, 188], ankle: [18, 216] };
+const legsOpen: FrontSide = { ...legArms, knee: [50, 184], ankle: [40, 214] };
+
+function hipMachine(side: FrontSide, load: number) {
+  const { cx } = FRONT;
+  return (
+    <>
+      <Stack x={STACK_X} top={STACK_TOP} load={load} />
+      <Seg p={[[cx + 30, 70], [STACK_X + 16, 70]]} w={8} c="frame" />
+      <rect x={cx - 30} y={64} width={60} height={110} rx={12} className="mc-fill mc-pad" />
+      <FrontSeat />
+      {[-1, 1].map((s) => {
+        const hand = frontAt(side.hand, s);
+        return <Bar key={s} at={add(hand, [0, 2])} a={90} len={16} w={6} c="grip" />;
+      })}
+    </>
+  );
+}
+
+/** Kniekussens met hendel; `outer` = buitenkant (abductor). */
+function kneePads(side: FrontSide, outer: boolean) {
+  return [-1, 1].map((s) => {
+    const knee = frontAt(side.knee, s);
+    const pad = add(knee, [s * (outer ? 13 : -13), 0]);
+    return (
+      <g key={s}>
+        <Seg p={[frontAt([outer ? 8 : 4, 202], s), add(pad, [0, 10])]} w={6} c="frame" />
+        <Bar at={pad} a={0} len={24} w={12} c="pad" />
+        <Bar at={add(frontAt(side.ankle, s), [0, 10])} a={90} len={18} w={6} c="frame" />
+      </g>
+    );
+  });
+}
+
+const hipPins: Scene['pins'] = [
+  { keys: ['range'], at: () => [FRONT.cx, 206] },
+  { keys: ['footrest'], at: () => frontAt([legsOpen.ankle[0] + 22, 222]) },
+  { keys: [BIJSCHUIF], at: () => [STACK_X + 16, STACK_TOP - 14] },
+];
+
+const abSide = mix(legsClosed, legsOpen);
+const abductor: Scene = {
+  id: 'abductor',
+  frames: frontFrames(t.apart),
+  figure: (j) => <FrontFigure side={abSide(j.load)} />,
+  back: (j) => hipMachine(abSide(j.load), j.load),
+  front: (j) => kneePads(abSide(j.load), true),
+  track: { at: (j) => frontAt(add(abSide(j.load).knee, [0, -20])), phase: 1 },
+  pins: hipPins,
+};
+
+const adSide = mix(legsOpen, { ...legsClosed, knee: [20, 188], ankle: [20, 216] });
+const adductor: Scene = {
+  id: 'adductor',
+  frames: frontFrames(t.together),
+  figure: (j) => <FrontFigure side={adSide(j.load)} />,
+  back: (j) => hipMachine(adSide(j.load), j.load),
+  front: (j) => kneePads(adSide(j.load), false),
+  track: { at: (j) => frontAt(add(adSide(j.load).knee, [0, -20])), phase: 1 },
+  pins: hipPins,
+};
+
 const ALL = [
   legPress,
   singleLegPress,
@@ -351,6 +695,16 @@ const ALL = [
   chestPress,
   latPulldown,
   cableRow,
+  legExtension,
+  legCurl,
+  calfPress,
+  abductor,
+  adductor,
+  pecFly,
+  rearDelt,
+  armCurl,
+  armExtension,
+  abCrunch,
   treadmill,
 ];
 

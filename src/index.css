@@ -158,6 +158,9 @@ h2 {
 .machine-cartoon .mc-fill.mc-skin { fill: rgb(var(--mm-skin)); }
 .machine-cartoon .mc-fill.mc-skin-far { fill: rgb(var(--mc-skin-far)); }
 .machine-cartoon .mc-fill.mc-hair { fill: rgb(var(--mm-hair)); }
+.machine-cartoon .mc-fill.mc-shirt { fill: rgb(var(--mc-shirt)); }
+.machine-cartoon .mc-fill.mc-shorts { fill: rgb(var(--mm-shorts)); }
+.machine-cartoon .mc-round { stroke-linejoin: round; }
 .machine-cartoon .mc-fill.mc-pad { fill: rgb(var(--mc-pad)); }
 .machine-cartoon .mc-fill.mc-grip { fill: rgb(var(--mc-grip)); }
 .machine-cartoon .mc-fill.mc-stack { fill: rgb(var(--mc-stack)); stroke-width: 1.5; }

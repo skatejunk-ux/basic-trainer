@@ -51,6 +51,21 @@ describe('scènes', () => {
     }
   });
 
+  it('bewegingsbaan (ook in vooraanzicht) blijft binnen het beeld', () => {
+    for (const scenes of Object.values(SCENES)) {
+      for (const scene of scenes) {
+        if (!scene.track) continue;
+        for (let ms = 0; ms < cycleMs(scene.frames); ms += 50) {
+          const [x, y] = scene.track.at(joints(sample(scene.frames, ms).pose));
+          expect(x, scene.id).toBeGreaterThan(0);
+          expect(x, scene.id).toBeLessThan(300);
+          expect(y, scene.id).toBeGreaterThan(0);
+          expect(y, scene.id).toBeLessThan(240);
+        }
+      }
+    }
+  });
+
   it('poppetje en machine blijven binnen het beeld', () => {
     for (const scenes of Object.values(SCENES)) {
       for (const scene of scenes) {

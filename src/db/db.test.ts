@@ -51,18 +51,45 @@ beforeEach(async () => {
 });
 
 describe('seed', () => {
+  it('vult later toegevoegde seed-oefeningen aan zonder bestaande te overschrijven', async () => {
+    await db.exercises.delete('leg-curl');
+    await db.exercises.update('leg-press', { name: 'Mijn Leg Press' });
+    await seedIfEmpty();
+    expect(await db.exercises.get('leg-curl')).toBeDefined();
+    expect((await db.exercises.get('leg-press'))?.name).toBe('Mijn Leg Press');
+  });
+
   it('is idempotent', async () => {
     await seedIfEmpty();
     await seedIfEmpty();
-    expect(await db.exercises.count()).toBe(8);
+    expect(await db.exercises.count()).toBe(SEED_EXERCISES.length);
     expect(await db.templates.count()).toBe(2);
     expect(await db.settings.count()).toBe(1);
   });
 
-  it('bevat de 8 oefeningen met animatie-ids', async () => {
+  it('bevat de 18 oefeningen met animatie-ids', async () => {
     const ex = await listExercises();
     expect(ex.map((e) => e.id).sort()).toEqual(
-      ['back-extension', 'cable-row', 'chest-press', 'lat-pulldown', 'leg-press', 'shoulder-press', 'single-leg-press', 'treadmill'],
+      [
+        'ab-crunch',
+        'abductor',
+        'adductor',
+        'arm-curl',
+        'arm-extension',
+        'back-extension',
+        'cable-row',
+        'calf-press',
+        'chest-press',
+        'lat-pulldown',
+        'leg-curl',
+        'leg-extension',
+        'leg-press',
+        'pec-fly',
+        'rear-delt',
+        'shoulder-press',
+        'single-leg-press',
+        'treadmill',
+      ],
     );
     expect(SEED_EXERCISES.find((e) => e.id === 'treadmill')?.animationId).toBe('treadmill-walk');
     expect(SEED_EXERCISES.find((e) => e.id === 'single-leg-press')?.unilateral).toBe(true);
@@ -207,7 +234,7 @@ describe('backup', () => {
     // dubbel importeren maakt geen duplicaten
     await importBackup(backup, 'merge');
     expect(await db.sessions.count()).toBe(2);
-    expect(await db.exercises.count()).toBe(8);
+    expect(await db.exercises.count()).toBe(SEED_EXERCISES.length);
   });
 
   it('zet een v1-back-up (zonder machinecodes) om', async () => {

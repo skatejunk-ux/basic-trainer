@@ -8,10 +8,13 @@ export async function seedIfEmpty(): Promise<void> {
     if ((await db.exercises.count()) === 0) await db.exercises.bulkAdd(structuredClone(SEED_EXERCISES));
     if ((await db.templates.count()) === 0) await db.templates.bulkAdd(structuredClone(SEED_TEMPLATES));
     if (!(await db.settings.get('singleton'))) await db.settings.add({ ...DEFAULT_SETTINGS });
-    // Aanvulling voor databases van vóór de spierkaart: muscleMap invullen bij seed-oefeningen.
+    // Aanvulling voor bestaande databases: later toegevoegde seed-oefeningen erbij zetten
+    // en muscleMap invullen bij seed-oefeningen van vóór de spierkaart.
     for (const seed of SEED_EXERCISES) {
       const existing = await db.exercises.get(seed.id);
-      if (existing && !existing.muscleMap) {
+      if (!existing) {
+        await db.exercises.add(structuredClone(seed));
+      } else if (!existing.muscleMap) {
         await db.exercises.update(seed.id, { muscleMap: structuredClone(seed.muscleMap) });
       }
     }

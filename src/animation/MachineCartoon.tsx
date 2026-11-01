@@ -210,7 +210,7 @@ export function CartoonSvg({
     <svg viewBox="0 0 300 240" className="h-auto w-full" aria-hidden>
       <Stage id={id} />
       {scene.back?.(j, j0, ms)}
-      <Figure j={j} />
+      {scene.figure ? scene.figure(j) : <Figure j={j} />}
       {scene.front?.(j, j0, ms)}
       <Track p={path} active={index === scene.track?.phase} />
       {pins.map((p, i) => (

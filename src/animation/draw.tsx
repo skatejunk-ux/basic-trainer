@@ -196,3 +196,97 @@ export function Figure({ j }: { j: Joints }) {
     </g>
   );
 }
+
+// ---------------------------------------------------------------- Vooraanzicht
+// Fly, rear delt, abductor en adductor bewegen zijwaarts en zijn in zijaanzicht onzichtbaar;
+// die scènes tekenen het poppetje recht van voren (of van achteren).
+
+export const FRONT = { cx: 150, hip: 170, shoulder: 106, shoulderDx: 22, hipDx: 12 };
+
+/** Punten van de rechterkant (x relatief aan het midden); de linkerkant wordt gespiegeld. */
+export interface FrontSide {
+  elbow: Pt;
+  hand: Pt;
+  knee: Pt;
+  ankle: Pt;
+}
+
+export const lerpPt = (a: Pt, b: Pt, k: number): Pt => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+
+/** Absolute positie van een rechterkant-punt; `s` = 1 rechts, -1 links. */
+export const frontAt = (p: Pt, s = 1): Pt => [FRONT.cx + s * p[0], p[1]];
+
+function FrontHead({ back }: { back: boolean }) {
+  const { cx, shoulder } = FRONT;
+  return (
+    <g transform={`translate(${cx},${shoulder - 26})`}>
+      <circle cx="-15" cy="2" r="4" className="mc-fill mc-skin" />
+      <circle cx="15" cy="2" r="4" className="mc-fill mc-skin" />
+      <circle r="15" className="mc-fill mc-skin" />
+      {back ? (
+        <>
+          <path d="M-15,4 C-17,-16 -6,-20 0,-19 C6,-20 17,-16 15,4 C11,10 -11,10 -15,4 Z" className="mc-fill mc-hair" />
+          <path d="M-7,-13 C-3,-16 3,-16 7,-13" className="mc-hair-shine" />
+        </>
+      ) : (
+        <>
+          <path
+            d="M-15,1 C-17,-16 -6,-20 0,-19 C6,-20 17,-16 15,1 C12,-8 6,-11 0,-10 C-6,-11 -12,-8 -15,1 Z"
+            className="mc-fill mc-hair"
+          />
+          <path d="M-6,-15 C-2,-18 4,-18 8,-15" className="mc-hair-shine" />
+          <ellipse cx="-5.5" cy="0" rx="2" ry="2.5" className="mc-eye" />
+          <ellipse cx="5.5" cy="0" rx="2" ry="2.5" className="mc-eye" />
+          <circle cx="-4.8" cy="-0.9" r="0.7" className="mc-eye-shine" />
+          <circle cx="6.2" cy="-0.9" r="0.7" className="mc-eye-shine" />
+          <circle cx="-9" cy="6" r="2.6" className="mc-cheek" />
+          <circle cx="9" cy="6" r="2.6" className="mc-cheek" />
+          <path d="M-4,7.5 Q0,11 4,7.5" className="mc-detail" />
+        </>
+      )}
+    </g>
+  );
+}
+
+/** Zittend poppetje in vooraanzicht; `back` = van achteren gezien (armen achter de romp). */
+export function FrontFigure({ side, back = false }: { side: FrontSide; back?: boolean }) {
+  const { cx, hip, shoulder, shoulderDx, hipDx } = FRONT;
+  const legs = [-1, 1].map((s) => {
+    const h: Pt = [cx + s * hipDx, hip + 2];
+    const k = frontAt(side.knee, s);
+    const a = frontAt(side.ankle, s);
+    return (
+      <g key={s}>
+        <Seg p={[a, add(a, [s * 2, 7])]} w={12} c="shoe" />
+        <Seg p={[h, k, a]} w={LIMB.leg} c="skin" />
+        <Seg p={[h, lerpPt(h, k, 0.7)]} w={LIMB.leg + 4} c="shorts" />
+      </g>
+    );
+  });
+  const arms = [-1, 1].map((s) => {
+    const sh: Pt = [cx + s * shoulderDx, shoulder + 4];
+    const e = frontAt(side.elbow, s);
+    const h = frontAt(side.hand, s);
+    return (
+      <g key={s}>
+        <Seg p={[sh, e, h]} w={LIMB.arm} c="skin" />
+        <Dot at={h} r={6} c="skin" />
+        <Seg p={[sh, along(sh, angle(sh, e), 12)]} w={LIMB.arm + 5} c="shirt" />
+      </g>
+    );
+  });
+  return (
+    <g>
+      {legs}
+      {back && arms}
+      <Seg p={[[cx, shoulder], [cx, shoulder - 16]]} w={11} c="skin" />
+      <path
+        d={`M${cx - 26},${shoulder} Q${cx},${shoulder - 6} ${cx + 26},${shoulder} L${cx + 20},${hip} L${cx - 20},${hip} Z`}
+        className="mc-fill mc-shirt mc-round"
+      />
+      <rect x={cx - 21} y={hip - 8} width={42} height={16} rx={6} className="mc-fill mc-shorts" />
+      {!back && arms}
+      <FrontHead back={back} />
+    </g>
+  );
+}

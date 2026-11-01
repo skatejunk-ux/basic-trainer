@@ -16,9 +16,13 @@ import {
 import { formatKg } from '../../coach';
 import { nl } from '../../content/nl';
 import { BackLink } from '../../components/BackLink';
+import { Icon } from '../../components/Icon';
 import { NumberStepper } from '../../components/NumberStepper';
 import { Sheet } from '../../components/Sheet';
 import { SortableList } from '../../components/SortableList';
+import { MiniCartoon } from '../../animation/MachineCartoon';
+import { SCENES } from '../../animation/scenes';
+import { MuscleMap } from '../../illustration/MuscleMap';
 import { displayName } from '../workout/plan';
 import { newTemplateItem, sortBySeed } from './helpers';
 
@@ -74,6 +78,7 @@ export function TemplateEditor() {
   const updateItem = (itemId: string, changes: Partial<TemplateItem>) =>
     save({ ...template, items: template.items.map((i) => (i.id === itemId ? { ...i, ...changes } : i)) });
   const byId = Object.fromEntries(template.items.map((i) => [i.id, i]));
+  const inTemplate = new Set(template.items.map((i) => i.exerciseId));
   const names = Object.fromEntries(
     template.items.map((i) => [i.id, displayName(exercises[i.exerciseId], i, nl.workout.warmupCardio)]),
   );
@@ -173,7 +178,7 @@ export function TemplateEditor() {
             <li key={ex.id}>
               <button
                 type="button"
-                className="btn-secondary w-full justify-start"
+                className="card flex w-full items-center gap-3 p-2 text-left active:bg-surface-2"
                 onClick={() => {
                   const item = newTemplateItem(ex, settings.defaultRestSec);
                   save({ ...template, items: [...template.items, item] });
@@ -181,7 +186,23 @@ export function TemplateEditor() {
                   setOpenItem(item.id);
                 }}
               >
-                {ex.name}
+                <span className="flex w-[112px] shrink-0 justify-center">
+                  {SCENES[ex.animationId] ? (
+                    <MiniCartoon exercise={ex} />
+                  ) : (
+                    <MuscleMap map={ex.muscleMap} size="xs" showLegend={false} />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold leading-tight">{ex.name}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{ex.muscles.join(' · ')}</span>
+                  {inTemplate.has(ex.id) && (
+                    <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-accent">
+                      <Icon name="check" className="h-3.5 w-3.5" />
+                      {t.inTraining}
+                    </span>
+                  )}
+                </span>
               </button>
             </li>
           ))}

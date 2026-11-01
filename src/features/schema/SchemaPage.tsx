@@ -32,10 +32,10 @@ export function SchemaPage() {
 
   if (!templates) return <p className="text-muted">{nl.today.loading}</p>;
 
+  const used = new Set(templates.map((tp) => tp.name));
+  const nextName = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find((l) => !used.has(l)) ?? String(templates.length + 1);
   const newTemplate = async () => {
-    const used = new Set(templates.map((tp) => tp.name));
-    const name = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find((l) => !used.has(l)) ?? String(templates.length + 1);
-    const tpl = await createTemplate({ name, items: [], order: templates.length });
+    const tpl = await createTemplate({ name: nextName, items: [], order: templates.length });
     navigate(`/schema/${tpl.id}`);
   };
 
@@ -65,7 +65,7 @@ export function SchemaPage() {
           ))}
         </ul>
         <button type="button" className="btn-secondary mt-2 w-full" onClick={newTemplate}>
-          {t.newTraining}
+          {t.newTraining(nextName)}
         </button>
       </div>
 
