@@ -5,7 +5,7 @@ import { describeMuscleMap, MUSCLE_NAMES, muscleLevel, type MuscleLevel } from '
 
 interface Props {
   map: MuscleMapData;
-  size?: 'sm' | 'lg';
+  size?: 'xs' | 'sm' | 'lg';
   showLegend?: boolean;
   /** Extra label naast de legenda, bv. "Conditie ❤️" bij de loopband. */
   extraLabel?: string;
@@ -136,7 +136,7 @@ function BackFigure({ map }: { map: MuscleMapData }) {
 
 export function MuscleMap({ map, size = 'lg', showLegend = size === 'lg', extraLabel, className = '' }: Props) {
   const t = nl.muscles;
-  const width = size === 'sm' ? 'w-[120px]' : 'w-full max-w-[360px]';
+  const width = size === 'xs' ? 'w-[84px]' : size === 'sm' ? 'w-[120px]' : 'w-full max-w-[360px]';
   return (
     <figure className={`muscle-map ${className}`}>
       <svg

@@ -5,6 +5,7 @@ import { BACK_EXTENSION_TYPE_KEY } from '../../types';
 import { backExtensionType, coachText, DEFAULT_CARDIO_PLAN, formatKg, resolveIncrement } from '../../coach';
 import { nl } from '../../content/nl';
 import { MuscleMap } from '../../illustration/MuscleMap';
+import { MiniCartoon } from '../../animation/MachineCartoon';
 import { Sheet } from '../../components/Sheet';
 import { ExerciseInstructions, SettingsForm, settingChip } from '../../components/exercise/ExerciseInfo';
 import { CardioCard } from './CardioCard';
@@ -56,9 +57,10 @@ export function ExerciseCard({ item, done, nextName, onNext, onFinish, onReorder
           type="button"
           onClick={() => setShowHow(true)}
           aria-label={`${t.howTo}: ${exercise.name}`}
-          className="shrink-0 rounded-xl bg-surface p-1"
+          className="flex shrink-0 items-center gap-1 rounded-xl bg-surface p-1"
         >
-          <MuscleMap map={exercise.muscleMap} size="sm" showLegend={false} />
+          <MuscleMap map={exercise.muscleMap} size="xs" showLegend={false} />
+          <MiniCartoon exercise={exercise} sceneId={bench ? 'back-extension-bench' : undefined} />
         </button>
         <div className="min-w-0 flex-1">
           <h2 className="text-2xl font-bold leading-tight">{displayName(exercise, item, t.warmupCardio)}</h2>

@@ -1,5 +1,5 @@
 // Bewegende cartoon-uitleg per machine: poppetje + machine in zijaanzicht, fase-label en genummerde instelpunten.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { Exercise } from '../types';
 import { nl } from '../content/nl';
 import { Figure, Floor, Pin } from './draw';
@@ -21,6 +21,50 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
+/** Tijd in ms die doorloopt zolang `playing` en het element in beeld is (scheelt batterij in de workout-modus). */
+function useCartoonClock(ref: RefObject<Element>, playing: boolean) {
+  const [visible, setVisible] = useState(true);
+  const [ms, setMs] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref]);
+
+  useEffect(() => {
+    if (!playing || !visible) return;
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      setMs((m) => m + (now - last));
+      last = now;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, visible]);
+
+  return ms;
+}
+
+/** Kleine, doorlopende versie zonder knoppen en instelpunten, bv. naast de titel in de workout. */
+export function MiniCartoon({ exercise, sceneId }: { exercise: Exercise; sceneId?: string }) {
+  const scenes = SCENES[exercise.animationId];
+  const reduced = usePrefersReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const ms = useCartoonClock(ref, !reduced);
+  const scene = scenes?.find((s) => s.id === sceneId) ?? scenes?.[0];
+  if (!scene) return null;
+  return (
+    <div ref={ref} className="machine-cartoon w-[112px]" data-mini-scene={scene.id}>
+      <CartoonSvg scene={scene} ms={ms} />
+    </div>
+  );
+}
+
 /** Alle cartoons van een oefening (de back extension heeft er twee); niets als er geen scène is. */
 export function MachineCartoons({ exercise }: { exercise: Exercise }) {
   const scenes = SCENES[exercise.animationId];
@@ -37,33 +81,10 @@ export function MachineCartoons({ exercise }: { exercise: Exercise }) {
 function MachineCartoon({ scene, exercise }: { scene: Scene; exercise: Exercise }) {
   const reduced = usePrefersReducedMotion();
   const [playing, setPlaying] = useState(!reduced);
-  const [visible, setVisible] = useState(true);
-  const [ms, setMs] = useState(0);
   const ref = useRef<HTMLElement>(null);
+  const ms = useCartoonClock(ref, playing);
 
   useEffect(() => setPlaying(!reduced), [reduced]);
-
-  // Alleen animeren als de cartoon in beeld is (scheelt batterij in de workout-modus).
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting));
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!playing || !visible) return;
-    let raf = 0;
-    let last = performance.now();
-    const tick = (now: number) => {
-      setMs((m) => m + (now - last));
-      last = now;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [playing, visible]);
 
   const { label } = sample(scene.frames, ms, !scene.linear);
   const pins = scenePins(scene, exercise);
