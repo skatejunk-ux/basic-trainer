@@ -19,6 +19,7 @@ export function exercise(over: Partial<Exercise> = {}): Exercise {
     name: 'Leg Press',
     pattern: 'squat',
     muscles: ['quadriceps'],
+    muscleMap: { primary: ['quads'], secondary: [] },
     kind: 'strength',
     unilateral: false,
     bodyweightCapable: false,

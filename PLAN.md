@@ -298,7 +298,7 @@ Doel: in één oogopslag zien **welke spieren een oefening traint**. Licht, offl
 - **Eén herbruikbaar SVG-poppetje** in vrolijke cartoonstijl (ronde vormen, dikke contourlijn, vriendelijk gezichtje), **vooraanzicht en achteraanzicht naast elkaar**. Eigen tekening, geen merklogo's.
 - Het lichaam is opgedeeld in losse, benoemde spiervlakken (`<path id>` per `MuscleId`, links en rechts):
   `chest, front-delts, side-delts, rear-delts, biceps, triceps, forearms, abs, obliques, traps, mid-back, lats, lower-back, glutes, quads, hamstrings, adductors, calves`.
-- Kleuren: **primair** = felle accentkleur, **secundair** = dezelfde kleur lichter, rest = neutraal grijs. Via CSS-variabelen, zodat het in dark en light theme werkt.
+- Kleuren: **primair** = oranje accentkleur, **secundair** = geel (lichter oranje leek te veel op de huidskleur), rest = neutraal grijs. Bilspieren zitten in het blauwe sportbroekje en kleuren alleen als ze getraind worden. Via CSS-variabelen, zodat het in dark en light theme werkt.
 - Component: `<MuscleMap primary={[...]} secondary={[...]} size="sm" | "lg" showLegend? />`. Legenda in het Nederlands, bv. "Primair: Quadriceps, Bilspieren · Secundair: Hamstrings".
 - Klein formaat (~120 px) voor in de workout-kaart, groot (~360 px) in het oefening-detail.
 - Optioneel bij de oefeningnaam: een **emoji/icoon per bewegingspatroon** (🦵 duwen benen, 🍑 hinge, 💪 duwen, 🧲 trekken, 🚶 lopen) voor extra herkenbaarheid.

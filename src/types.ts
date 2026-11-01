@@ -16,6 +16,35 @@ export type BackExtensionType = 'machine' | 'bench';
 /** Sleutel in MachineSettings.values waarin het Back Extension-type wordt bewaard. */
 export const BACK_EXTENSION_TYPE_KEY = 'type';
 
+/** Spiergroepen voor de spierkaart (PLAN.md §8). */
+export const MUSCLE_IDS = [
+  'chest',
+  'front-delts',
+  'side-delts',
+  'rear-delts',
+  'biceps',
+  'triceps',
+  'forearms',
+  'abs',
+  'obliques',
+  'traps',
+  'mid-back',
+  'lats',
+  'lower-back',
+  'glutes',
+  'quads',
+  'hamstrings',
+  'adductors',
+  'calves',
+] as const;
+
+export type MuscleId = (typeof MUSCLE_IDS)[number];
+
+export interface MuscleMap {
+  primary: MuscleId[];
+  secondary: MuscleId[];
+}
+
 export interface SettingField {
   key: string;
   label: string;
@@ -37,7 +66,8 @@ export interface Exercise {
   breathing: string;
   tempo: string;
   defaultIncrementKg: number;
-  animationId: string;
+  muscleMap: MuscleMap; // spierkaart (PLAN.md §8)
+  animationId: string; // gereserveerd voor latere animaties (backlog)
   isCustom: boolean;
 }
 

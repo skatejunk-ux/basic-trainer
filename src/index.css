@@ -46,3 +46,46 @@ body {
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
+
+/* Spierkaart (src/illustration/MuscleMap.tsx) */
+:root,
+:root[data-theme='dark'] {
+  --mm-skin: 246 205 168;
+  --mm-outline: 12 14 18;
+  --mm-idle: 112 121 136;
+  --mm-secondary: 250 204 21;
+  --mm-shorts: 59 130 246;
+  --mm-shoe: 236 238 242;
+  --mm-hair: 92 64 51;
+}
+
+:root[data-theme='light'] {
+  --mm-outline: 30 34 42;
+  --mm-idle: 196 202 212;
+  --mm-secondary: 234 179 8;
+}
+
+.muscle-map svg path,
+.muscle-map svg circle,
+.muscle-map svg ellipse,
+.muscle-map svg rect {
+  stroke: rgb(var(--mm-outline));
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.muscle-map .mm-skin { fill: rgb(var(--mm-skin)); }
+.muscle-map .mm-skin-stroke { fill: none; stroke: rgb(var(--mm-skin)) !important; }
+.muscle-map .mm-outline-stroke { fill: none; }
+.muscle-map .mm-shorts { fill: rgb(var(--mm-shorts)); }
+.muscle-map .mm-shoe { fill: rgb(var(--mm-shoe)); }
+.muscle-map .mm-hair { fill: rgb(var(--mm-hair)); }
+.muscle-map .mm-eye { fill: rgb(var(--mm-outline)); stroke: none; }
+.muscle-map .mm-cheek { fill: rgb(244 114 182 / 0.45); stroke: none; }
+.muscle-map .mm-detail { fill: none; stroke-width: 2; opacity: 0.6; }
+.muscle-map .mm-idle { fill: rgb(var(--mm-idle)); }
+.muscle-map .mm-primary { fill: rgb(var(--color-accent)); }
+.muscle-map .mm-secondary { fill: rgb(var(--mm-secondary)); }
+.muscle-map .mm-caption text { fill: rgb(var(--color-muted)); font-size: 16px; font-weight: 600; stroke: none; }
+.mm-swatch-primary { background: rgb(var(--color-accent)); }
+.mm-swatch-secondary { background: rgb(var(--mm-secondary)); }
