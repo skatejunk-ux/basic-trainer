@@ -15,6 +15,7 @@ import { nl } from '../../content/nl';
 import { Sheet } from '../../components/Sheet';
 import { applyTheme } from '../../theme';
 import { useWorkout } from '../workout/store';
+import { formatBodyWeight, parseBodyWeight } from './bodyWeight';
 
 const t = nl.more;
 const dateFmt = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -83,22 +84,7 @@ export function MorePage() {
             onChange={(v) => change({ weekGoal: Number(v) as 3 | 4 })}
           />
         </div>
-        <label className="block px-3 py-2">
-          <span className="mb-2 block">{t.bodyWeight}</span>
-          <input
-            inputMode="decimal"
-            key={settings.bodyWeightKg ?? ''}
-            defaultValue={settings.bodyWeightKg ?? ''}
-            onBlur={(e) => {
-              const raw = e.target.value.trim();
-              const v = Number(raw.replace(',', '.'));
-              if (!raw) return void change({ bodyWeightKg: undefined });
-              if (v >= 30 && v <= 300 && v !== settings.bodyWeightKg) void change({ bodyWeightKg: Math.round(v * 10) / 10 });
-            }}
-            className="min-h-touch w-full rounded-xl border border-border bg-surface-2 px-3 outline-none focus:border-accent"
-          />
-          <span className="mt-1 block text-xs text-muted">{t.bodyWeightHint}</span>
-        </label>
+        <BodyWeightField value={settings.bodyWeightKg} onSave={(kg) => change({ bodyWeightKg: kg })} />
       </Group>
 
       <Group title={t.appearance}>
@@ -183,6 +169,72 @@ export function MorePage() {
         </div>
       </Sheet>
     </section>
+  );
+}
+
+/** Gewicht bewaren met Enter/✓ op het toetsenbord, de knop of door het veld te verlaten; met bevestiging. */
+function BodyWeightField({ value, onSave }: { value?: number; onSave: (kg: number | undefined) => Promise<void> }) {
+  const [text, setText] = useState(formatBodyWeight(value));
+  const [status, setStatus] = useState<'idle' | 'saved' | 'invalid'>('idle');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dirty = text.trim() !== formatBodyWeight(value);
+
+  useEffect(() => setText(formatBodyWeight(value)), [value]);
+
+  const save = async () => {
+    if (!dirty) return;
+    const parsed = parseBodyWeight(text);
+    if (parsed === undefined) return setStatus('invalid');
+    const kg = parsed ?? undefined;
+    await onSave(kg);
+    setText(formatBodyWeight(kg));
+    setStatus('saved');
+  };
+
+  return (
+    <form
+      className="px-3 py-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        // Het veld verlaten sluit het toetsenbord en bewaart via onBlur.
+        if (document.activeElement === inputRef.current) inputRef.current?.blur();
+        else void save();
+      }}
+    >
+      <label htmlFor="body-weight" className="mb-2 block">
+        {t.bodyWeight}
+      </label>
+      <div className="flex gap-2">
+        <input
+          id="body-weight"
+          ref={inputRef}
+          inputMode="decimal"
+          enterKeyHint="done"
+          autoComplete="off"
+          value={text}
+          aria-invalid={status === 'invalid' || undefined}
+          aria-describedby="body-weight-hint"
+          onChange={(e) => {
+            setText(e.target.value);
+            setStatus('idle');
+          }}
+          onBlur={() => void save()}
+          className="min-h-touch min-w-0 flex-1 rounded-xl border border-border bg-surface-2 px-3 outline-none focus:border-accent aria-[invalid]:border-danger"
+        />
+        <button type="submit" className="btn-secondary" disabled={!dirty}>
+          {t.bodyWeightSave}
+        </button>
+      </div>
+      <p id="body-weight-hint" className="mt-1 text-xs" role="status">
+        {status === 'saved' ? (
+          <span className="font-semibold text-success">{t.bodyWeightSaved}</span>
+        ) : status === 'invalid' ? (
+          <span className="font-semibold text-danger">{t.bodyWeightInvalid}</span>
+        ) : (
+          <span className="text-muted">{t.bodyWeightHint}</span>
+        )}
+      </p>
+    </form>
   );
 }
 

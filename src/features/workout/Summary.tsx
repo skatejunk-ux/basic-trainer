@@ -7,6 +7,7 @@ import { Icon } from '../../components/Icon';
 import { nl } from '../../content/nl';
 import { displayName, exerciseIdFor, formatDuration, isWarmupCardio, itemsInOrder, tonnage } from './plan';
 import { useWorkout } from './store';
+import { parseBodyWeight } from '../settings/bodyWeight';
 
 const t = nl.workout.summary;
 
@@ -151,21 +152,22 @@ export function Summary({ onSaved }: { onSaved: () => void }) {
 
 function WeightAsk() {
   const [kg, setKg] = useState('');
-  const value = Number(kg.replace(',', '.'));
-  const valid = value >= 30 && value <= 300;
+  const value = parseBodyWeight(kg);
+  const valid = typeof value === 'number';
   return (
     <form
       className="card p-3"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!valid) return;
-        useWorkout.setState({ settings: await updateSettings({ bodyWeightKg: Math.round(value * 10) / 10 }) });
+        useWorkout.setState({ settings: await updateSettings({ bodyWeightKg: value }) });
       }}
     >
       <p className="mb-2 text-sm">{t.weightAsk}</p>
       <div className="flex gap-2">
         <input
           inputMode="decimal"
+          enterKeyHint="done"
           aria-label={t.weightLabel}
           placeholder={t.weightLabel}
           value={kg}
