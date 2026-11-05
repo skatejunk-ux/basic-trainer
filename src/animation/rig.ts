@@ -125,14 +125,20 @@ export interface Keyframe {
   /** Duur van de overgang vanaf het vorige keyframe (cyclisch) naar dit keyframe. */
   ms: number;
   label: string;
+  /** Comic-actiewoord in een knal-wolkje tijdens deze fase, bv. "DUW!". */
+  pow?: string;
 }
 
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
 export const cycleMs = (frames: Keyframe[]) => frames.reduce((s, f) => s + f.ms, 0);
 
-/** Pose en label op tijdstip `ms` binnen de (herhalende) cyclus. */
-export function sample(frames: Keyframe[], ms: number, easing = true): { pose: Pose; label: string; index: number } {
+/** Pose en label op tijdstip `ms` binnen de (herhalende) cyclus; `k` = voortgang (0..1) binnen het keyframe. */
+export function sample(
+  frames: Keyframe[],
+  ms: number,
+  easing = true,
+): { pose: Pose; label: string; index: number; k: number } {
   const total = cycleMs(frames);
   let t = ((ms % total) + total) % total;
   for (let i = 0; i < frames.length; i++) {
@@ -140,7 +146,7 @@ export function sample(frames: Keyframe[], ms: number, easing = true): { pose: P
     if (t < f.ms || i === frames.length - 1) {
       const from = frames[(i - 1 + frames.length) % frames.length].pose;
       const k = Math.min(1, t / f.ms);
-      return { pose: lerpPose(from, f.pose, easing ? ease(k) : k), label: f.label, index: i };
+      return { pose: lerpPose(from, f.pose, easing ? ease(k) : k), label: f.label, index: i, k };
     }
     t -= f.ms;
   }

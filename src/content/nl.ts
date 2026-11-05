@@ -279,6 +279,8 @@ export const nl = {
     },
     summary: {
       title: 'Goed gedaan!',
+      /** Comic-uitroep in de knalster; vast per training gekozen. */
+      pow: ['BAM!', 'TOPPIE!', 'KNAL!', 'POW!', 'WHAM!'],
       duration: 'Duur',
       sets: 'Sets',
       tonnage: 'Getild',
@@ -350,5 +352,21 @@ export const nl = {
     apart: 'Knieën naar buiten – 1 s · uitademen 💨',
     together: 'Knieën naar binnen – 1 s · uitademen 💨',
     crunch: 'Inrollen – 1 s · uitademen 💨',
+    /** Comic-actiewoorden in het knal-wolkje tijdens de werkfase. */
+    pow: {
+      push: 'DUW!',
+      pull: 'TREK!',
+      up: 'OMHOOG!',
+      hold: 'HOU VAST!',
+      squeeze: 'KNIJP!',
+      extend: 'STREK!',
+      curl: 'BUIG!',
+      toes: 'TENEN!',
+      close: 'SLUIT!',
+      open: 'OPEN!',
+      apart: 'UIT!',
+      together: 'IN!',
+      crunch: 'ROL IN!',
+    },
   },
 } as const;

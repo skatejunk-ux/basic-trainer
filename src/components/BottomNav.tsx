@@ -13,7 +13,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={nl.nav.label}
-      className="border-t border-border/60 bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="border-t-2 border-ink bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
       <ul className="flex">
         {tabs.map((t) => (
@@ -22,7 +22,7 @@ export function BottomNav() {
               to={t.to}
               end={t.end}
               className={({ isActive }) =>
-                `group flex min-h-[60px] min-w-touch flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+                `group flex min-h-[60px] min-w-touch flex-col items-center justify-center gap-1 font-pop text-[13px] tracking-[0.06em] ${
                   isActive ? 'text-fg' : 'text-muted'
                 }`
               }
@@ -30,8 +30,8 @@ export function BottomNav() {
               {({ isActive }) => (
                 <>
                   <span
-                    className={`flex h-8 w-14 items-center justify-center rounded-full transition-colors ${
-                      isActive ? 'bg-accent/15 text-accent' : ''
+                    className={`flex h-8 w-14 items-center justify-center rounded-full border-2 transition-all ${
+                      isActive ? '-rotate-3 border-ink bg-pop text-pop-fg shadow-comic-sm' : 'border-transparent'
                     }`}
                   >
                     <Icon name={t.icon} className="h-[22px] w-[22px]" />

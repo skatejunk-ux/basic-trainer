@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { SetLog } from '../../types';
 import { compareToPrevious, formatKg, sessionEnergy } from '../../coach';
 import { updateSettings } from '../../db';
-import { Icon } from '../../components/Icon';
+import { PopBurst } from '../../components/PopBurst';
 import { nl } from '../../content/nl';
 import { displayName, exerciseIdFor, formatDuration, isWarmupCardio, itemsInOrder, tonnage } from './plan';
 import { useWorkout } from './store';
@@ -86,11 +86,9 @@ export function Summary({ onSaved }: { onSaved: () => void }) {
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col items-center pt-2 text-center">
-        <span className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-accent/15 text-accent ring-8 ring-accent/5">
-          <Icon name="trophy" className="h-8 w-8" />
-        </span>
-        <h1 className="text-3xl font-bold">{t.title}</h1>
+      <div className="flex flex-col items-center text-center">
+        <PopBurst text={t.pow[Math.floor(session.startedAt / 1000) % t.pow.length]} />
+        <h1 className="-mt-1 text-4xl">{t.title}</h1>
         <p className="mt-1 text-sm text-muted">{nl.workout.title(s.template.name)}</p>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
@@ -101,7 +99,7 @@ export function Summary({ onSaved }: { onSaved: () => void }) {
       {energy ? (
         <div className="card p-4" data-testid="energy">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tabular-nums">≈ {energy.total} kcal</span>
+            <span className="font-pop text-3xl tracking-wide">≈ {energy.total} kcal</span>
             <span className="text-xs uppercase tracking-wide text-muted">{t.energy}</span>
           </div>
           <div className="text-sm text-muted">{t.energySplit(energy.strength, energy.cardio)}</div>
@@ -185,7 +183,7 @@ function WeightAsk() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="card px-2 py-3">
-      <div className="text-xl font-bold tabular-nums">{value}</div>
+      <div className="font-pop text-2xl tracking-wide">{value}</div>
       <div className="eyebrow mt-0.5">{label}</div>
     </div>
   );

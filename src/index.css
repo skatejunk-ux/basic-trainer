@@ -2,34 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens: RGB-kanalen zodat Tailwind alpha kan toepassen. Donker is standaard. */
+/*
+ * Pop-art comic-stijl: dikke zwarte inktlijnen, harde schaduwen, primaire kleuren (rood, geel, blauw)
+ * en Ben-Day-stippen. Design tokens zijn RGB-kanalen zodat Tailwind alpha kan toepassen.
+ * Donker ("nachtstrip", nachtblauw) is standaard; licht is krantenpapier-crème.
+ */
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --color-bg: 15 17 21;
-  --color-surface: 24 27 33;
-  --color-surface-2: 34 38 46;
-  --color-border: 46 51 61;
-  --color-fg: 241 243 246;
-  --color-muted: 154 163 178;
-  --color-accent: 249 115 22;
-  --color-accent-fg: 20 10 2;
-  --color-danger: 248 113 113;
+  --color-bg: 21 23 40;
+  --color-surface: 33 36 62;
+  --color-surface-2: 46 50 84;
+  --color-border: 66 71 110;
+  --color-fg: 250 246 236;
+  --color-muted: 172 176 206;
+  --color-accent: 255 84 84;
+  --color-accent-fg: 10 8 16;
+  --color-danger: 255 122 122;
   --color-success: 74 222 128;
+  /* inkt voor contouren en harde schaduwen */
+  --color-ink: 4 4 10;
+  /* pop-geel voor knoppen, tekstvakken en badges */
+  --color-pop: 255 212 0;
+  --color-pop-fg: 10 8 16;
+  --color-pop-blue: 72 136 255;
+  /* Ben-Day-stippen op de achtergrond */
+  --color-dot: 255 255 255;
+  --dot-a: 0.05;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-bg: 246 247 249;
+  --color-bg: 255 246 222;
   --color-surface: 255 255 255;
-  --color-surface-2: 236 238 242;
-  --color-border: 214 218 226;
-  --color-fg: 20 23 29;
-  --color-muted: 91 100 116;
-  --color-accent: 217 85 5;
+  --color-surface-2: 255 238 196;
+  --color-border: 230 212 168;
+  --color-fg: 22 18 30;
+  --color-muted: 100 90 108;
+  --color-accent: 214 28 40;
   --color-accent-fg: 255 255 255;
-  --color-danger: 200 40 40;
+  --color-danger: 196 26 36;
   --color-success: 22 130 70;
+  --color-ink: 22 18 30;
+  --color-pop: 255 208 0;
+  --color-pop-fg: 22 18 30;
+  --color-pop-blue: 30 84 216;
+  --color-dot: 214 28 40;
+  --dot-a: 0.11;
 }
 
 html,
@@ -49,28 +68,52 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Comic-koppen: Bangers (meegeleverd, werkt offline). Eén gewicht; geen nep-vet. */
 h1,
-h2 {
-  letter-spacing: -0.015em;
+h2,
+.font-pop {
+  font-family: 'Bangers', Impact, 'Arial Black', system-ui, sans-serif;
+  font-synthesis: none;
+  letter-spacing: 0.035em;
+  line-height: 1.05;
+}
+h1 {
+  text-shadow: 3px 3px 0 rgb(var(--color-accent));
 }
 
-/* Spierkaart (src/illustration/MuscleMap.tsx) */
+/* Papier met Ben-Day-stipjes achter de pagina's. */
+.pop-paper {
+  background-color: rgb(var(--color-bg));
+  background-image: radial-gradient(rgb(var(--color-dot) / var(--dot-a)) 1.3px, transparent 1.8px);
+  background-size: 11px 11px;
+}
+
+/* ------------------------------------------------------------------ Spierkaart (src/illustration/MuscleMap.tsx) */
 :root,
 :root[data-theme='dark'] {
-  --mm-skin: 246 205 168;
-  --mm-outline: 12 14 18;
+  --mm-skin: 255 202 162;
+  --mm-outline: 4 4 10;
   /* Spieren in rust: een tint donkerder dan de huid, met bruine definitielijnen. */
-  --mm-idle: 233 183 143;
-  --mm-line: 176 116 82;
-  --mm-secondary: 251 191 36;
-  --mm-shorts: 59 130 246;
-  --mm-shoe: 236 238 242;
-  --mm-hair: 92 64 51;
+  --mm-idle: 246 180 138;
+  --mm-line: 190 108 74;
+  --mm-primary: 238 38 48;
+  --mm-secondary: 255 208 0;
+  --mm-shorts: 36 88 228;
+  --mm-shoe: 255 255 255;
+  --mm-hair: 20 18 32;
+  --mm-hair-shine: 92 156 255;
+  --mm-panel: 34 58 152;
+  --mm-ray: 44 72 176;
+  --mm-panel-dot: 120 200 255;
+  --mm-panel-dot-a: 0.3;
 }
 
 :root[data-theme='light'] {
-  --mm-outline: 30 34 42;
-  --mm-secondary: 234 170 8;
+  --mm-outline: 22 18 30;
+  --mm-panel: 255 222 92;
+  --mm-ray: 255 236 150;
+  --mm-panel-dot: 236 64 52;
+  --mm-panel-dot-a: 0.3;
 }
 
 .muscle-map svg path,
@@ -78,7 +121,7 @@ h2 {
 .muscle-map svg ellipse,
 .muscle-map svg rect {
   stroke: rgb(var(--mm-outline));
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -87,62 +130,120 @@ h2 {
 .muscle-map .mm-outline-stroke { fill: none; }
 .muscle-map .mm-shorts { fill: rgb(var(--mm-shorts)); }
 .muscle-map .mm-shoe { fill: rgb(var(--mm-shoe)); }
-.muscle-map .mm-sole { fill: none; stroke: rgb(var(--color-accent)) !important; stroke-width: 4 !important; }
+.muscle-map .mm-sole { fill: none; stroke: rgb(var(--mm-primary)) !important; stroke-width: 4.5 !important; }
 .muscle-map .mm-hair { fill: rgb(var(--mm-hair)); }
-.muscle-map .mm-hair-shine { fill: none; stroke: rgb(255 255 255 / 0.22) !important; stroke-width: 4 !important; }
+.muscle-map .mm-hair-shine { fill: none; stroke: rgb(var(--mm-hair-shine)) !important; stroke-width: 4.5 !important; }
 .muscle-map .mm-eye { fill: rgb(var(--mm-outline)); stroke: none !important; }
-.muscle-map .mm-eye-shine { fill: rgb(255 255 255 / 0.9); stroke: none !important; }
-.muscle-map .mm-cheek { fill: rgb(244 114 182 / 0.4); stroke: none !important; }
+.muscle-map .mm-eye-shine { fill: rgb(255 255 255 / 0.95); stroke: none !important; }
+.muscle-map .mm-blush circle { fill: rgb(236 52 92 / 0.75); stroke: none !important; }
 .muscle-map .mm-detail { fill: none; stroke: rgb(var(--mm-line)) !important; stroke-width: 2; }
-.muscle-map .mm-face { fill: none; stroke-width: 2.5; }
-.muscle-map .mm-shadow { fill: rgb(0 0 0 / 0.22); stroke: none !important; }
+.muscle-map .mm-face { fill: none; stroke-width: 3; }
+.muscle-map .mm-brow { fill: none; stroke-width: 3.5 !important; }
+.muscle-map .mm-shadow { fill: rgb(0 0 0 / 0.28); stroke: none !important; }
 .muscle-map .mm-muscle { stroke: rgb(var(--mm-line)) !important; stroke-width: 1.75 !important; }
 .muscle-map .mm-idle { fill: rgb(var(--mm-idle)); }
-.muscle-map .mm-muscle.mm-primary { fill: rgb(var(--color-accent)); stroke: rgb(var(--mm-outline)) !important; stroke-width: 2 !important; }
-.muscle-map .mm-muscle.mm-secondary { fill: rgb(var(--mm-secondary)); stroke: rgb(var(--mm-outline)) !important; stroke-width: 2 !important; }
-.muscle-map .mm-muscle.mm-shorts { stroke: rgb(var(--mm-outline)) !important; stroke-width: 2 !important; }
-.muscle-map .mm-caption text { fill: rgb(var(--color-muted)); font-size: 16px; font-weight: 600; stroke: none; }
-.mm-swatch-primary { background: rgb(var(--color-accent)); }
-.mm-swatch-secondary { background: rgb(var(--mm-secondary)); }
+.muscle-map .mm-muscle.mm-primary { fill: rgb(var(--mm-primary)); stroke: rgb(var(--mm-outline)) !important; stroke-width: 2.25 !important; }
+.muscle-map .mm-muscle.mm-secondary { fill: rgb(var(--mm-secondary)); stroke: rgb(var(--mm-outline)) !important; stroke-width: 2.25 !important; }
+.muscle-map .mm-muscle.mm-shorts { stroke: rgb(var(--mm-outline)) !important; stroke-width: 2.25 !important; }
+.muscle-map .mm-dots { stroke: none !important; pointer-events: none; }
+.muscle-map .mm-dot-primary { fill: rgb(120 0 20 / 0.5); stroke: none !important; }
+.muscle-map .mm-dot-secondary { fill: rgb(214 104 0 / 0.55); stroke: none !important; }
+/* comic-panelen achter de grote spierkaart */
+.muscle-map .mm-panel-bg { fill: rgb(var(--mm-panel)); stroke: none !important; }
+.muscle-map .mm-panel-ray { fill: rgb(var(--mm-ray)); stroke: none !important; }
+.muscle-map .mm-panel-dot { fill: rgb(var(--mm-panel-dot) / var(--mm-panel-dot-a)); stroke: none !important; }
+.muscle-map .mm-panel-border { fill: none; stroke-width: 4 !important; }
+.muscle-map .mm-tag-box { fill: rgb(var(--color-pop)); stroke-width: 3 !important; }
+.muscle-map .mm-tag-shadow { fill: rgb(var(--mm-outline)); stroke: none !important; }
+.muscle-map .mm-tag text {
+  fill: rgb(var(--color-pop-fg));
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  stroke: none;
+}
+.mm-swatch-primary { background: rgb(var(--mm-primary)); box-shadow: 0 0 0 2px rgb(var(--color-ink)); }
+.mm-swatch-secondary { background: rgb(var(--mm-secondary)); box-shadow: 0 0 0 2px rgb(var(--color-ink)); }
 @keyframes mm-pulse {
-  0%, 100% { filter: drop-shadow(0 0 0 rgb(var(--color-accent) / 0)); }
-  50% { filter: drop-shadow(0 0 6px rgb(var(--color-accent) / 0.8)); }
+  0%, 100% { filter: drop-shadow(0 0 0 rgb(var(--color-pop) / 0)); }
+  50% { filter: drop-shadow(0 0 5px rgb(var(--color-pop) / 0.95)); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .muscle-map.mm-animate .mm-muscle.mm-primary { animation: mm-pulse 2.4s ease-in-out infinite; }
 }
 
-/* Machine-cartoons (src/animation/) */
+/* ------------------------------------------------------------------ Machine-cartoons (src/animation/) */
 :root,
 :root[data-theme='dark'] {
-  --mc-frame: 128 137 152;
-  --mc-pad: 58 63 76;
-  --mc-stack: 150 158 172;
-  --mc-stack-lift: 206 212 222;
-  --mc-tower: 34 38 46;
-  --mc-grip: 30 34 42;
-  --mc-skin-far: 222 176 140;
-  --mc-shirt: 236 240 245;
-  --mc-shirt-far: 188 196 208;
-  --mc-shorts-far: 37 99 205;
-  --mc-spot: 255 255 255;
-  --mc-spot-a: 0.07;
+  /* comic-paneel: kobaltblauw met lichtere stralen en cyaan stippen */
+  --mc-bg: 34 58 152;
+  --mc-ray: 44 72 176;
+  --mc-dot: 120 200 255;
+  --mc-dot-a: 0.32;
+  --mc-floor: 20 30 86;
+  --mc-floor-dot: 120 200 255;
+  --mc-speed: 255 255 255;
+  --mc-pin: 255 212 0;
+  --mc-track: 255 212 0;
+  /* machine */
+  --mc-frame: 214 222 236;
+  --mc-pad: 40 42 62;
+  --mc-grip: 24 24 36;
+  --mc-tower: 26 30 54;
+  --mc-stack: 190 198 214;
+  --mc-stack-lift: 255 208 0;
+  /* poppetje */
+  --mc-skin-far: 234 164 124;
+  --mc-shirt: 238 38 48;
+  --mc-shirt-far: 178 22 34;
+  --mc-shorts-far: 22 58 170;
+  --mc-red: 238 38 48;
 }
 
 :root[data-theme='light'] {
-  --mc-frame: 150 158 172;
-  --mc-pad: 58 64 76;
-  --mc-stack: 176 184 196;
-  --mc-stack-lift: 226 230 236;
-  --mc-tower: 232 235 240;
-  --mc-shirt-far: 200 207 218;
-  --mc-spot: var(--color-accent);
-  --mc-spot-a: 0.08;
+  --mc-bg: 255 222 92;
+  --mc-ray: 255 236 150;
+  --mc-dot: 236 64 52;
+  --mc-dot-a: 0.28;
+  --mc-floor: 36 88 228;
+  --mc-floor-dot: 255 255 255;
+  --mc-speed: 22 18 30;
+  --mc-pin: 255 255 255;
+  --mc-track: 238 38 48;
+  --mc-tower: 44 46 70;
 }
 
-.machine-cartoon .mc-ol { fill: none; stroke: rgb(var(--mm-outline)); stroke-linecap: round; stroke-linejoin: round; }
+/* Paneel: zonnestralen + vlak; de stippen (vignet) zitten in ::before, de tekening erboven. */
+.mc-panel {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 2.5px solid rgb(var(--color-ink));
+  border-radius: 0.75rem;
+  background-color: rgb(var(--mc-bg));
+  background-image: repeating-conic-gradient(
+    from 4deg at 50% 64%,
+    rgb(var(--mc-ray)) 0deg 10deg,
+    rgb(var(--mc-bg)) 10.6deg 20deg
+  );
+}
+.mc-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgb(var(--mc-dot) / var(--mc-dot-a)) 1.4px, transparent 2px);
+  background-size: 8px 8px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 55%, transparent 28%, #000 85%);
+  mask-image: radial-gradient(ellipse at 50% 55%, transparent 28%, #000 85%);
+}
+.mc-panel > svg { position: relative; }
+.mc-mini .mc-panel { border-width: 2px; border-radius: 0.5rem; }
+
+.machine-cartoon .mc-ol { fill: none; stroke: rgb(var(--color-ink)); stroke-linecap: round; stroke-linejoin: round; }
 .machine-cartoon .mc-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.machine-cartoon .mc-fill { stroke: rgb(var(--mm-outline)); stroke-width: 2; }
+.machine-cartoon .mc-fill { stroke: rgb(var(--color-ink)); stroke-width: 2.5; stroke-linejoin: round; }
 .machine-cartoon .mc-line.mc-skin { stroke: rgb(var(--mm-skin)); }
 .machine-cartoon .mc-line.mc-skin-far { stroke: rgb(var(--mc-skin-far)); }
 .machine-cartoon .mc-line.mc-shirt { stroke: rgb(var(--mc-shirt)); }
@@ -150,11 +251,11 @@ h2 {
 .machine-cartoon .mc-line.mc-shorts { stroke: rgb(var(--mm-shorts)); }
 .machine-cartoon .mc-line.mc-shorts-far { stroke: rgb(var(--mc-shorts-far)); }
 .machine-cartoon .mc-line.mc-shoe { stroke: rgb(var(--mm-shoe)); }
-.machine-cartoon .mc-line.mc-sole { stroke: rgb(var(--color-accent)); }
+.machine-cartoon .mc-line.mc-sole { stroke: rgb(var(--mc-red)); }
 .machine-cartoon .mc-line.mc-frame { stroke: rgb(var(--mc-frame)); }
 .machine-cartoon .mc-line.mc-pad { stroke: rgb(var(--mc-pad)); }
 .machine-cartoon .mc-line.mc-grip { stroke: rgb(var(--mc-grip)); }
-.machine-cartoon .mc-line.mc-sheen { stroke: rgb(255 255 255 / 0.28); }
+.machine-cartoon .mc-line.mc-sheen { stroke: rgb(255 255 255 / 0.55); }
 .machine-cartoon .mc-fill.mc-skin { fill: rgb(var(--mm-skin)); }
 .machine-cartoon .mc-fill.mc-skin-far { fill: rgb(var(--mc-skin-far)); }
 .machine-cartoon .mc-fill.mc-hair { fill: rgb(var(--mm-hair)); }
@@ -163,70 +264,131 @@ h2 {
 .machine-cartoon .mc-round { stroke-linejoin: round; }
 .machine-cartoon .mc-fill.mc-pad { fill: rgb(var(--mc-pad)); }
 .machine-cartoon .mc-fill.mc-grip { fill: rgb(var(--mc-grip)); }
-.machine-cartoon .mc-fill.mc-stack { fill: rgb(var(--mc-stack)); stroke-width: 1.5; }
-.machine-cartoon .mc-fill.mc-stack-lift { fill: rgb(var(--mc-stack-lift)); stroke-width: 1.5; }
-.machine-cartoon .mc-fill.mc-knob { fill: rgb(var(--color-accent)); stroke-width: 1.5; }
+.machine-cartoon .mc-fill.mc-stack { fill: rgb(var(--mc-stack)); stroke-width: 1.75; }
+.machine-cartoon .mc-fill.mc-stack-lift { fill: rgb(var(--mc-stack-lift)); stroke-width: 1.75; }
+.machine-cartoon .mc-fill.mc-knob { fill: rgb(var(--mc-red)); stroke-width: 1.75; }
 .machine-cartoon .mc-tower { fill: rgb(var(--mc-tower)); }
-.machine-cartoon .mc-hair-shine { fill: none; stroke: rgb(255 255 255 / 0.25); stroke-width: 2; stroke-linecap: round; }
-.machine-cartoon .mc-eye { fill: rgb(var(--mm-outline)); }
-.machine-cartoon .mc-eye-shine { fill: rgb(255 255 255 / 0.9); }
-.machine-cartoon .mc-cheek { fill: rgb(244 114 182 / 0.4); }
-.machine-cartoon .mc-detail { fill: none; stroke: rgb(var(--mm-outline)); stroke-width: 1.75; stroke-linecap: round; }
-.machine-cartoon .mc-cable { fill: none; stroke: rgb(var(--color-muted)); stroke-width: 2; stroke-linecap: round; }
+.machine-cartoon .mc-hair-shine { fill: none; stroke: rgb(var(--mm-hair-shine)); stroke-width: 2.6; stroke-linecap: round; }
+.machine-cartoon .mc-eye { fill: rgb(var(--color-ink)); }
+.machine-cartoon .mc-eye-shine { fill: rgb(255 255 255 / 0.95); }
+.machine-cartoon .mc-benday circle { fill: rgb(236 52 92 / 0.8); }
+.machine-cartoon .mc-brow { fill: none; stroke: rgb(var(--color-ink)); stroke-width: 2.1; stroke-linecap: round; }
+.machine-cartoon .mc-mouth { fill: rgb(var(--color-ink)); }
+.machine-cartoon .mc-puff circle { fill: #fff; stroke: rgb(var(--color-ink)); stroke-width: 1.3; }
+.machine-cartoon .mc-detail { fill: none; stroke: rgb(var(--color-ink)); stroke-width: 1.9; stroke-linecap: round; }
+.machine-cartoon .mc-cable { fill: none; stroke: rgb(var(--color-ink)); stroke-width: 2.4; stroke-linecap: round; }
 .machine-cartoon .mc-rod { stroke: rgb(var(--mc-frame)); stroke-width: 2; }
-.machine-cartoon .mc-spot-in { stop-color: rgb(var(--mc-spot)); stop-opacity: var(--mc-spot-a); }
-.machine-cartoon .mc-spot-out { stop-color: rgb(var(--mc-spot)); stop-opacity: 0; }
-.machine-cartoon .mc-floor-in { stop-color: rgb(var(--color-border)); stop-opacity: 0.7; }
-.machine-cartoon .mc-floor-out { stop-color: rgb(var(--color-border)); stop-opacity: 0; }
-.machine-cartoon .mc-floor { stroke: rgb(var(--color-border)); stroke-width: 2; }
+.machine-cartoon .mc-floor-fill { fill: rgb(var(--mc-floor)); }
+.machine-cartoon .mc-floor-dot { fill: rgb(var(--mc-floor-dot) / 0.22); }
+.machine-cartoon .mc-floor { stroke: rgb(var(--color-ink)); stroke-width: 3; }
 .machine-cartoon .mc-belt { stroke: rgb(var(--mc-frame)); stroke-width: 2; stroke-dasharray: 6 18; }
+/* bewegingsbaan: comic-pijl met inktrand */
 .machine-cartoon .mc-track { opacity: 0.4; transition: opacity 0.25s; }
 .machine-cartoon .mc-track[data-active] { opacity: 1; }
-.machine-cartoon .mc-track-line { fill: none; stroke: rgb(var(--color-accent)); stroke-width: 2.5; stroke-dasharray: 0.5 5; stroke-linecap: round; }
-.machine-cartoon .mc-track-start { fill: rgb(var(--color-accent)); }
-.machine-cartoon .mc-track-head { fill: rgb(var(--color-accent)); stroke: rgb(var(--color-accent)); stroke-width: 2; stroke-linejoin: round; }
-.machine-cartoon .mc-pin circle { fill: rgb(var(--color-accent)); stroke: rgb(var(--mm-outline)); stroke-width: 2; }
-.machine-cartoon .mc-pin .mc-pin-halo { stroke: none; opacity: 0.22; }
-.machine-cartoon .mc-pin text { fill: rgb(var(--color-accent-fg)); font-size: 12px; font-weight: 700; }
+.machine-cartoon .mc-track-ol { fill: none; stroke: rgb(var(--color-ink)); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.machine-cartoon .mc-track-line { fill: none; stroke: rgb(var(--mc-track)); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.machine-cartoon .mc-track-start { fill: rgb(var(--mc-track)); stroke: rgb(var(--color-ink)); stroke-width: 2; }
+.machine-cartoon .mc-track-head { fill: rgb(var(--mc-track)); stroke: rgb(var(--color-ink)); stroke-width: 2.2; stroke-linejoin: round; }
+.machine-cartoon .mc-speed line { stroke: rgb(var(--mc-speed)); stroke-width: 2.6; stroke-linecap: round; }
+/* knal-wolkje */
+.machine-cartoon .mc-burst-shadow { fill: rgb(var(--color-ink)); }
+.machine-cartoon .mc-burst-star { fill: rgb(var(--mc-red)); stroke: rgb(var(--color-ink)); stroke-width: 2.5; stroke-linejoin: round; }
+.machine-cartoon .mc-burst-core { fill: rgb(var(--color-pop)); }
+.machine-cartoon .mc-burst text {
+  fill: rgb(var(--color-ink));
+  font-family: 'Bangers', Impact, sans-serif;
+  letter-spacing: 0.04em;
+}
+/* instelpunten */
+.machine-cartoon .mc-pin-badge { fill: rgb(var(--mc-pin)); stroke: rgb(var(--color-ink)); stroke-width: 2.5; }
+.machine-cartoon .mc-pin-shadow { fill: rgb(var(--color-ink)); }
+.machine-cartoon .mc-pin-halo { fill: none; stroke: rgb(var(--mc-pin)); stroke-width: 3; opacity: 0; }
+.machine-cartoon .mc-pin text {
+  fill: rgb(var(--color-ink));
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 15px;
+}
+.machine-cartoon .mc-title {
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+}
+/* fase-tekstvak, zoals het gele vertellersvak in een strip */
+.mc-caption {
+  display: inline-block;
+  min-width: 0;
+  border: 2px solid rgb(var(--color-ink));
+  border-radius: 0.25rem;
+  background: rgb(var(--color-pop));
+  box-shadow: 2px 2px 0 rgb(var(--color-ink));
+  color: rgb(var(--color-pop-fg));
+  font-family: 'Bangers', Impact, sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  padding: 0.15rem 0.5rem;
+  transform: rotate(-1deg);
+}
+.mc-phase {
+  height: 0.7rem;
+  overflow: hidden;
+  border: 2px solid rgb(var(--color-ink));
+  border-radius: 9999px;
+  background: rgb(var(--color-surface-2));
+}
 .mc-phase-fill { background: rgb(var(--color-accent)); }
 .mc-pin-swatch {
-  display: inline-flex; height: 1.25rem; width: 1.25rem; flex-shrink: 0; align-items: center; justify-content: center;
-  border-radius: 9999px; background: rgb(var(--color-accent)); color: rgb(var(--color-accent-fg)); font-size: 0.75rem; font-weight: 700;
+  display: inline-flex; height: 1.4rem; width: 1.4rem; flex-shrink: 0; align-items: center; justify-content: center;
+  border: 2px solid rgb(var(--color-ink)); border-radius: 9999px; background: rgb(var(--mc-pin));
+  box-shadow: 1.5px 1.5px 0 rgb(var(--color-ink));
+  color: rgb(var(--color-ink)); font-family: 'Bangers', Impact, sans-serif; font-size: 0.85rem; padding-top: 1px;
 }
 @keyframes mc-pin-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.22; }
-  50% { transform: scale(1.3); opacity: 0.04; }
+  0% { transform: scale(0.85); opacity: 0.9; }
+  70%, 100% { transform: scale(1.6); opacity: 0; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .machine-cartoon .mc-pin-halo { animation: mc-pin-pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .machine-cartoon .mc-pin-halo { animation: mc-pin-pulse 2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 }
 
-/* Knoppen */
+/* ------------------------------------------------------------------ Knoppen en vlakken */
 @layer components {
   .btn-primary {
-    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl bg-accent px-4 font-semibold text-accent-fg active:scale-[0.98] disabled:opacity-40;
+    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl border-2 border-ink bg-pop px-4 font-pop text-xl text-pop-fg shadow-comic-sm transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 disabled:shadow-none;
   }
   .btn-secondary {
-    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 font-medium text-fg active:scale-[0.98] disabled:opacity-40;
+    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl border-2 border-ink bg-surface px-3 font-semibold text-fg shadow-comic-sm transition-transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-40 disabled:shadow-none;
   }
   .btn-ghost {
-    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl px-3 font-medium text-muted active:bg-surface-2;
+    @apply inline-flex min-h-touch items-center justify-center gap-2 rounded-xl px-3 font-semibold text-muted active:bg-surface-2;
   }
   .chip {
-    @apply inline-flex items-center rounded-full border border-border bg-surface-2 px-3 py-1 text-sm;
+    @apply inline-flex items-center rounded-full border-2 border-ink bg-surface-2 px-3 py-1 text-sm font-medium;
   }
-  /* Kaart: oppervlak met een fijne rand, zodat vlakken in donker en licht netjes loskomen. */
+  /* Kaart: comic-vak met inktrand en harde schaduw. */
   .card {
-    @apply rounded-2xl border border-border/60 bg-surface;
+    @apply rounded-2xl border-2 border-ink bg-surface shadow-comic;
   }
   /* Kleine sectiekop boven een groep. */
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-wider text-muted;
+    @apply font-pop text-[13px] uppercase tracking-[0.08em] text-muted;
   }
   .icon-btn {
     @apply inline-flex h-11 w-11 items-center justify-center rounded-full text-muted active:bg-surface-2;
   }
+  /* Comic-badge: geel vak met inktrand, licht gekanteld (bv. de letter van de training). */
+  .pop-badge {
+    @apply flex shrink-0 -rotate-3 items-center justify-center rounded-2xl border-2 border-ink bg-pop font-pop text-pop-fg shadow-comic-sm;
+  }
 }
+
+/* Comic-knalster (src/components/PopBurst.tsx) */
+.pop-burst { overflow: visible; }
+.pop-burst-ray { fill: rgb(var(--color-pop) / 0.35); }
+.pop-burst-shadow { fill: rgb(var(--color-ink)); }
+.pop-burst-star { fill: rgb(var(--mc-red)); stroke: rgb(var(--color-ink)); stroke-width: 2.5; stroke-linejoin: round; }
+.pop-burst-core { fill: rgb(var(--color-pop)); }
+.pop-burst text { fill: rgb(var(--color-ink)); font-family: 'Bangers', Impact, sans-serif; letter-spacing: 0.04em; }
 
 @keyframes sheet-in {
   from { transform: translateY(24px); opacity: 0; }
@@ -236,9 +398,25 @@ h2 {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* comic "plop": iets te groot en dan terug */
+@keyframes pop-in {
+  0% { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes pop-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pop-wiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
 @media (prefers-reduced-motion: no-preference) {
   .animate-sheet { animation: sheet-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
   .animate-fade { animation: fade-in 0.18s ease-out; }
+  .animate-pop { animation: pop-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+  .animate-pop-spin { animation: pop-spin 24s linear infinite; }
+  .animate-wiggle { animation: pop-wiggle 1.6s ease-in-out infinite; }
 }
 
 /* Grafiekkleuren (dataviz-referentiepalet, categorisch slot 1 en 2) */

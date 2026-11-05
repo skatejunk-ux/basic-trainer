@@ -3,7 +3,7 @@ import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'rea
 import type { Exercise } from '../types';
 import { nl } from '../content/nl';
 import { Icon } from '../components/Icon';
-import { Figure, Pin, Stage, Track } from './draw';
+import { Burst, Figure, Pin, SpeedLines, Stage, Track, type FigureFx } from './draw';
 import { cycleMs, joints, sample, type Keyframe, type Pt } from './rig';
 import { SCENES, type Scene } from './scenes';
 
@@ -60,7 +60,7 @@ export function MiniCartoon({ exercise, sceneId }: { exercise: Exercise; sceneId
   const scene = scenes?.find((s) => s.id === sceneId) ?? scenes?.[0];
   if (!scene) return null;
   return (
-    <div ref={ref} className="machine-cartoon w-[112px]" data-mini-scene={scene.id}>
+    <div ref={ref} className="machine-cartoon mc-mini w-[112px]" data-mini-scene={scene.id}>
       <CartoonSvg scene={scene} ms={ms} track={false} />
     </div>
   );
@@ -92,8 +92,8 @@ function MachineCartoon({ scene, exercise }: { scene: Scene; exercise: Exercise 
 
   const name = scene.title ? `${exercise.name} (${scene.title})` : exercise.name;
   return (
-    <figure ref={ref} className="machine-cartoon rounded-xl border border-border bg-surface p-2" data-scene={scene.id}>
-      {scene.title && <p className="px-1 text-sm font-semibold">{scene.title}</p>}
+    <figure ref={ref} className="machine-cartoon card p-2" data-scene={scene.id}>
+      {scene.title && <p className="mc-title px-1 pb-1">{scene.title}</p>}
       <button
         type="button"
         className="block w-full"
@@ -103,8 +103,8 @@ function MachineCartoon({ scene, exercise }: { scene: Scene; exercise: Exercise 
         <CartoonSvg scene={scene} ms={ms} pins={pins} />
       </button>
       <PhaseBar frames={scene.frames} ms={ms} />
-      <div className="flex items-center justify-between gap-2 px-1">
-        <p className="text-sm font-semibold" data-testid="cartoon-phase">
+      <div className="mt-1 flex items-center justify-between gap-2 px-1">
+        <p className="mc-caption" data-testid="cartoon-phase">
           {label}
         </p>
         <button
@@ -153,13 +153,13 @@ function PhaseBar({ frames, ms }: { frames: Keyframe[]; ms: number }) {
   const total = cycleMs(frames);
   let t0 = ((ms % total) + total) % total;
   return (
-    <div className="mx-1 mt-1 flex gap-1" aria-hidden>
+    <div className="mx-1 mt-2 flex gap-1.5" aria-hidden>
       {list.map((p, i) => {
         const fill = Math.min(1, Math.max(0, t0 / p.ms));
         t0 -= p.ms;
         return (
-          <div key={i} className="h-1.5 overflow-hidden rounded-full bg-surface-2" style={{ flexGrow: p.ms }}>
-            <div className="mc-phase-fill h-full rounded-full" style={{ width: `${fill * 100}%` }} />
+          <div key={i} className="mc-phase" style={{ flexGrow: p.ms }}>
+            <div className="mc-phase-fill h-full" style={{ width: `${fill * 100}%` }} />
           </div>
         );
       })}
@@ -188,7 +188,10 @@ function trackPoints(scene: Scene): Pt[] {
   );
 }
 
-/** De tekening zelf op tijdstip `ms` van de cyclus. */
+/** Spiegelt een punt rond het midden (vooraanzicht-scènes zijn symmetrisch). */
+const MIRROR = 'translate(300,0) scale(-1,1)';
+
+/** De tekening zelf op tijdstip `ms` van de cyclus; `track` = ook bewegingsbaan en comic-effecten. */
 export function CartoonSvg({
   scene,
   ms,
@@ -202,20 +205,49 @@ export function CartoonSvg({
 }) {
   // useId bevat dubbele punten; die zijn lastig in url(#…).
   const id = `mc${useId().replace(/:/g, '')}`;
-  const { pose, index } = sample(scene.frames, ms, !scene.linear);
+  const easing = !scene.linear;
+  const { pose, index, k } = sample(scene.frames, ms, easing);
   const j = joints(pose);
   const j0 = joints(scene.frames[0].pose);
   const path = useMemo(() => (track ? trackPoints(scene) : []), [scene, track]);
+  const frame = scene.frames[index];
+  const prev = scene.frames[(index - 1 + scene.frames.length) % scene.frames.length];
+  // Uitademen zodra de stapel (of het lichaam) omhoog gaat: mond open en een wolkje.
+  const fx: FigureFx = { exhale: (frame.pose.load ?? 0) > (prev.pose.load ?? 0) ? k : null };
+  const working = !!scene.track && index === scene.track.phase;
+  const front = !!scene.figure;
+  let speed: { at: Pt; v: Pt } | null = null;
+  if (track && working && scene.track) {
+    const at = scene.track.at(j);
+    const before = scene.track.at(joints(sample(scene.frames, ms - 80, easing).pose));
+    speed = { at, v: [at[0] - before[0], at[1] - before[1]] };
+  }
   return (
-    <svg viewBox="0 0 300 240" className="h-auto w-full" aria-hidden>
-      <Stage id={id} />
-      {scene.back?.(j, j0, ms)}
-      {scene.figure ? scene.figure(j) : <Figure j={j} />}
-      {scene.front?.(j, j0, ms)}
-      <Track p={path} active={index === scene.track?.phase} />
-      {pins.map((p, i) => (
-        <Pin key={i} at={p.at} n={i + 1} />
-      ))}
-    </svg>
+    <span className="mc-panel">
+      <svg viewBox="0 0 300 240" className="block h-auto w-full" aria-hidden>
+        <Stage id={id} />
+        {scene.back?.(j, j0, ms)}
+        {scene.figure ? scene.figure(j, fx) : <Figure j={j} fx={fx} />}
+        {scene.front?.(j, j0, ms)}
+        <Track p={path} active={working} />
+        {front && (
+          <g transform={MIRROR}>
+            <Track p={path} active={working} />
+          </g>
+        )}
+        {speed && <SpeedLines {...speed} />}
+        {speed && front && (
+          <g transform={MIRROR}>
+            <SpeedLines {...speed} />
+          </g>
+        )}
+        {pins.map((p, i) => (
+          <Pin key={i} at={p.at} n={i + 1} />
+        ))}
+        {track && frame.pow && (
+          <Burst at={scene.burst ?? [238, 38]} text={frame.pow} t={k * frame.ms} dur={frame.ms} />
+        )}
+      </svg>
+    </span>
   );
 }

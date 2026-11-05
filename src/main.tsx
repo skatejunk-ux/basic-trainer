@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { getSettings, initDb } from './db';
 import { applyTheme } from './theme';
 import { DEFAULT_SETTINGS } from './types';
+import '@fontsource/bangers/latin-400.css';
 import './index.css';
 
 applyTheme(DEFAULT_SETTINGS.theme);

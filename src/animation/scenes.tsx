@@ -2,7 +2,7 @@
 // de back extension heeft er twee (machine en 45°-bank). Tempo volgt de seed (bv. 1 s duwen – 2 s terug).
 import type { ReactNode } from 'react';
 import { nl } from '../content/nl';
-import { Bar, Dot, FLOOR, FRONT, FrontFigure, frontAt, lerpPt, Seg, Stack, type FrontSide } from './draw';
+import { Bar, Dot, FLOOR, FRONT, FrontFigure, frontAt, lerpPt, Seg, Stack, type FigureFx, type FrontSide } from './draw';
 import { add, along, dir, LEN, type Joints, type Keyframe, type Pose, type Pt } from './rig';
 
 export interface Scene {
@@ -20,18 +20,25 @@ export interface Scene {
   /** Bewegingsbaan met pijl: het punt dat beweegt, getekend over de werkfase `phase` (index in `frames`). */
   track?: { at: (j: Joints) => Pt; phase: number };
   /** Eigen poppetje i.p.v. het zijaanzicht (vooraanzicht-scènes; de beweging zit dan in `j.load`). */
-  figure?: (j: Joints) => ReactNode;
+  figure?: (j: Joints, fx: FigureFx) => ReactNode;
+  /** Midden van het knal-wolkje met het actiewoord; standaard rechtsboven. */
+  burst?: Pt;
 }
 
 const t = nl.cartoon;
+/** Werkfase met label ("Duwen – 1 s …") en comic-actiewoord ("DUW!"). */
+type Act = keyof typeof t.pow;
+const act = (a: Act) => ({ label: t[a], pow: t.pow[a] });
+/** Knal-wolkje linksboven, voor scènes met de stapel of het hoofd rechtsboven. */
+const BURST_LEFT: Pt = [62, 38];
 const BIJSCHUIF = 'bijschuifgewicht';
 const STACK_TOP = 64;
 
 /** Standaard krachtcyclus: start, 1 s concentrisch, 2 s terug. */
-function strength(start: Pose, end: Pose, work: string, extra: Keyframe[] = []): Keyframe[] {
+function strength(start: Pose, end: Pose, work: Act, extra: Keyframe[] = []): Keyframe[] {
   return [
     { pose: start, ms: 700, label: t.start },
-    { pose: { ...end, load: 1 }, ms: 1000, label: work },
+    { pose: { ...end, load: 1 }, ms: 1000, ...act(work) },
     ...extra,
     { pose: start, ms: 2000, label: t.back },
   ];
@@ -81,7 +88,7 @@ function legPressMachine(j: Joints, j0: Joints, plate: Pt = [j.ankle[0] + 9, j.a
 
 const legPress: Scene = {
   id: 'leg-press',
-  frames: strength(lpStart, lpEnd, t.push),
+  frames: strength(lpStart, lpEnd, 'push'),
   back: (j, j0) => legPressMachine(j, j0),
   track: { at: (j) => add(j.ankle, [0, 24]), phase: 1 },
   pins: [
@@ -96,7 +103,7 @@ const sl = { farThigh: 112, farShin: 5, farFoot: 95 };
 const singleLegPress: Scene = {
   ...legPress,
   id: 'single-leg-press',
-  frames: strength({ ...lpStart, ...sl }, { ...lpEnd, ...sl }, t.push).map((f, i) =>
+  frames: strength({ ...lpStart, ...sl }, { ...lpEnd, ...sl }, 'push').map((f, i) =>
     i === 0 ? { ...f, label: t.weakLeg } : f,
   ),
 };
@@ -113,8 +120,8 @@ const backExtensionMachine: Scene = {
   title: nl.workout.typeMachine,
   frames: [
     { pose: beStart, ms: 700, label: t.start },
-    { pose: { ...beEnd, load: 1 }, ms: 1000, label: t.up },
-    { pose: { ...beEnd, load: 1 }, ms: 1000, label: t.hold },
+    { pose: { ...beEnd, load: 1 }, ms: 1000, ...act('up') },
+    { pose: { ...beEnd, load: 1 }, ms: 1000, ...act('hold') },
     { pose: beStart, ms: 2000, label: t.down },
   ],
   back: (j) => {
@@ -147,8 +154,9 @@ const backExtensionMachine: Scene = {
 };
 
 // ---------------------------------------------------------------- Back extension (45°-bank)
-const bbTop: Pose = { hip: [165, 112], torso: 135, ...crossed, thigh: 315, shin: 315, foot: 45 };
-const bbBottom: Pose = { ...bbTop, torso: 30 };
+// `load` heeft hier geen stapel, maar stuurt wel de comic-effecten (uitademen bij omhoog).
+const bbTop: Pose = { hip: [165, 112], torso: 135, ...crossed, thigh: 315, shin: 315, foot: 45, load: 1 };
+const bbBottom: Pose = { ...bbTop, torso: 30, load: 0 };
 
 const backExtensionBench: Scene = {
   id: 'back-extension-bench',
@@ -156,9 +164,10 @@ const backExtensionBench: Scene = {
   frames: [
     { pose: bbTop, ms: 700, label: t.start },
     { pose: bbBottom, ms: 2000, label: t.down },
-    { pose: bbTop, ms: 1000, label: t.up },
-    { pose: bbTop, ms: 1000, label: t.hold },
+    { pose: bbTop, ms: 1000, ...act('up') },
+    { pose: bbTop, ms: 1000, ...act('hold') },
   ],
+  burst: BURST_LEFT,
   back: (_j, j0) => {
     const pad = add(along(j0.hip, 315, 14), dir(45, 19));
     const plate = add(along(j0.ankle, 45, 7), dir(315, 9));
@@ -189,7 +198,7 @@ const SP_PIVOT: Pt = [82, 112];
 
 const shoulderPress: Scene = {
   id: 'shoulder-press',
-  frames: strength(spStart, spEnd, t.push),
+  frames: strength(spStart, spEnd, 'push'),
   track: { at: (j) => add(j.hand, [16, 0]), phase: 1 },
   back: (j, j0) => (
     <>
@@ -217,7 +226,7 @@ const CP_PIVOT: Pt = [92, 26];
 
 const chestPress: Scene = {
   id: 'chest-press',
-  frames: strength(cpStart, cpEnd, t.push),
+  frames: strength(cpStart, cpEnd, 'push'),
   track: { at: (j) => add(j.hand, [0, -16]), phase: 1 },
   back: (j, j0) => (
     <>
@@ -246,7 +255,8 @@ const LAT_PULLEY: Pt = [128, 16];
 
 const latPulldown: Scene = {
   id: 'lat-pulldown',
-  frames: strength(latStart, latEnd, t.pull),
+  frames: strength(latStart, latEnd, 'pull'),
+  burst: BURST_LEFT,
   track: { at: (j) => add(j.hand, [22, 0]), phase: 1 },
   back: (j) => (
     <>
@@ -283,7 +293,8 @@ const ROW_PULLEY: Pt = [208, 150];
 
 const cableRow: Scene = {
   id: 'cable-row',
-  frames: strength(rowStart, rowEnd, t.pull, [{ pose: { ...rowEnd, load: 1 }, ms: 1000, label: t.squeeze }]),
+  frames: strength(rowStart, rowEnd, 'pull', [{ pose: { ...rowEnd, load: 1 }, ms: 1000, ...act('squeeze') }]),
+  burst: BURST_LEFT,
   track: { at: (j) => add(j.hand, [0, 16]), phase: 1 },
   back: (j, j0) => {
     const px = j0.ankle[0] + 9;
@@ -340,14 +351,21 @@ const treadmill: Scene = {
         className="mc-belt"
         style={{ strokeDashoffset: ((ms / 12) % 24).toFixed(1) }}
       />
+      {/* comic-"whoosh" achter de loper: streepjes die naar achteren wegglijden */}
+      <g className="mc-speed">
+        {[92, 116, 140].map((y, i) => {
+          const o = (ms / 14 + i * 11) % 30;
+          return <line key={y} x1={112 - o} y1={y} x2={92 - o} y2={y} style={{ opacity: 1 - o / 30 }} />;
+        })}
+      </g>
     </>
   ),
   pins: [{ keys: ['inclinePct', 'speedKmh', 'minutes'], at: () => [248, 52] }],
 };
 
 /** Krachtcyclus met 1 s vasthouden in de eindpositie (isolatie-oefeningen). */
-const withHold = (start: Pose, end: Pose, work: string, hold: string = t.hold) =>
-  strength(start, end, work, [{ pose: { ...end, load: 1 }, ms: 1000, label: hold }]);
+const withHold = (start: Pose, end: Pose, work: Act, hold: Act = 'hold') =>
+  strength(start, end, work, [{ pose: { ...end, load: 1 }, ms: 1000, ...act(hold) }]);
 
 /** Absolute hoek van het scheenbeen (knie → enkel). */
 const shinAngle = (j: Joints) => (Math.atan2(j.ankle[0] - j.knee[0], j.ankle[1] - j.knee[1]) * 180) / Math.PI;
@@ -364,7 +382,7 @@ const leRoller = (j: Joints) => add(along(j.knee, shinAngle(j), 38), dir(shinAng
 
 const legExtension: Scene = {
   id: 'leg-extension',
-  frames: withHold(leStart, leEnd, t.extend),
+  frames: withHold(leStart, leEnd, 'extend'),
   track: { at: leRoller, phase: 1 },
   back: (j, j0) => (
     <>
@@ -400,7 +418,8 @@ const LC_COLUMN = 244;
 
 const legCurl: Scene = {
   id: 'leg-curl',
-  frames: withHold(lcStart, lcEnd, t.curl),
+  frames: withHold(lcStart, lcEnd, 'curl'),
+  burst: [170, 38],
   track: { at: lcRoller, phase: 1 },
   back: (j, j0) => (
     <>
@@ -439,7 +458,7 @@ const calfPlate = (j: Joints): Pt => [j.toe[0] + 6, j.toe[1] - 6];
 
 const calfPress: Scene = {
   id: 'calf-press',
-  frames: withHold(cpfStart, cpfEnd, t.toes),
+  frames: withHold(cpfStart, cpfEnd, 'toes'),
   back: (j, j0) => legPressMachine(j, j0, calfPlate(j)),
   track: { at: (j) => add(j.toe, [0, -20]), phase: 1 },
   pins: [
@@ -480,7 +499,8 @@ const armPins: Scene['pins'] = [
 
 const armCurl: Scene = {
   id: 'arm-curl',
-  frames: strength(acStraight, acBent, t.curl),
+  frames: strength(acStraight, acBent, 'curl'),
+  burst: BURST_LEFT,
   back: armMachine,
   front: (_j, j0) => <Dot at={j0.elbow} r={4} c="grip" />,
   track: { at: (j) => add(j.hand, [14, 0]), phase: 1 },
@@ -490,7 +510,7 @@ const armCurl: Scene = {
 const armExtension: Scene = {
   ...armCurl,
   id: 'arm-extension',
-  frames: strength({ ...acBent, fArm: 115 }, acStraight, t.extend),
+  frames: strength({ ...acBent, fArm: 115 }, acStraight, 'extend'),
 };
 
 // ---------------------------------------------------------------- Abdominal crunch
@@ -503,7 +523,7 @@ const abRoller = (j: Joints) => add(j.ankle, [12, -10]);
 
 const abCrunch: Scene = {
   id: 'ab-crunch',
-  frames: strength(abStart, abEnd, t.crunch),
+  frames: strength(abStart, abEnd, 'crunch'),
   back: (j) => (
     <>
       <Stack x={18} top={STACK_TOP} load={j.load} />
@@ -533,7 +553,7 @@ const abCrunch: Scene = {
 // ---------------------------------------------------------------- Vooraanzicht: fly, rear delt, abductor, adductor
 // De pose zelf staat stil; `load` (0 → 1 in de werkfase) stuurt de zijwaartse beweging.
 const FRONT_POSE: Pose = { hip: [FRONT.cx, FRONT.hip], torso: 180, uArm: 0, fArm: 0, ...seated };
-const frontFrames = (work: string) => withHold(FRONT_POSE, FRONT_POSE, work);
+const frontFrames = (work: Act) => withHold(FRONT_POSE, FRONT_POSE, work);
 const STACK_X = 256;
 
 const mix = (a: FrontSide, b: FrontSide) => (k: number): FrontSide => ({
@@ -601,8 +621,9 @@ const flyPins: Scene['pins'] = [
 const flySide = mix(flyOpen, flyClosed);
 const pecFly: Scene = {
   id: 'pec-fly',
-  frames: frontFrames(t.close),
-  figure: (j) => <FrontFigure side={flySide(j.load)} />,
+  frames: frontFrames('close'),
+  burst: BURST_LEFT,
+  figure: (j, fx) => <FrontFigure side={flySide(j.load)} fx={fx} />,
   back: (j) => flyMachine(flySide(j.load), j.load, false),
   track: { at: (j) => frontAt(add(flySide(j.load).hand, [0, 16])), phase: 1 },
   pins: flyPins,
@@ -615,8 +636,9 @@ const rdSide = mix(
 );
 const rearDelt: Scene = {
   id: 'rear-delt',
-  frames: frontFrames(t.open),
-  figure: (j) => <FrontFigure side={rdSide(j.load)} back />,
+  frames: frontFrames('open'),
+  burst: BURST_LEFT,
+  figure: (j, fx) => <FrontFigure side={rdSide(j.load)} back fx={fx} />,
   back: (j) => flyMachine(rdSide(j.load), j.load, true),
   track: { at: (j) => frontAt(add(rdSide(j.load).hand, [0, 16])), phase: 1 },
   pins: flyPins,
@@ -667,8 +689,9 @@ const hipPins: Scene['pins'] = [
 const abSide = mix(legsClosed, legsOpen);
 const abductor: Scene = {
   id: 'abductor',
-  frames: frontFrames(t.apart),
-  figure: (j) => <FrontFigure side={abSide(j.load)} />,
+  frames: frontFrames('apart'),
+  burst: BURST_LEFT,
+  figure: (j, fx) => <FrontFigure side={abSide(j.load)} fx={fx} />,
   back: (j) => hipMachine(abSide(j.load), j.load),
   front: (j) => kneePads(abSide(j.load), true),
   track: { at: (j) => frontAt(add(abSide(j.load).knee, [0, -20])), phase: 1 },
@@ -678,8 +701,9 @@ const abductor: Scene = {
 const adSide = mix(legsOpen, { ...legsClosed, knee: [20, 188], ankle: [20, 216] });
 const adductor: Scene = {
   id: 'adductor',
-  frames: frontFrames(t.together),
-  figure: (j) => <FrontFigure side={adSide(j.load)} />,
+  frames: frontFrames('together'),
+  burst: BURST_LEFT,
+  figure: (j, fx) => <FrontFigure side={adSide(j.load)} fx={fx} />,
   back: (j) => hipMachine(adSide(j.load), j.load),
   front: (j) => kneePads(adSide(j.load), false),
   track: { at: (j) => frontAt(add(adSide(j.load).knee, [0, -20])), phase: 1 },

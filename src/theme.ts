@@ -10,7 +10,7 @@ export function applyTheme(theme: AppSettings['theme']): void {
     document.documentElement.dataset.theme = resolved;
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', resolved === 'light' ? '#f6f7f9' : '#0f1115');
+      ?.setAttribute('content', resolved === 'light' ? '#fff6de' : '#151728');
   };
   if (mediaListener) media?.removeEventListener('change', mediaListener);
   mediaListener = theme === 'system' ? set : null;

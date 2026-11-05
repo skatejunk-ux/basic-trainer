@@ -59,8 +59,8 @@ export function WorkoutPage() {
     items.slice(0, index).find((i) => !isDone(i) && !skipped.has(i.id));
 
   return (
-    <div className="mx-auto flex min-h-full max-w-xl flex-col bg-bg text-fg">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-bg/95 px-3 pb-2 pt-[calc(env(safe-area-inset-top)+8px)] backdrop-blur">
+    <div className="pop-paper mx-auto flex min-h-full max-w-xl flex-col text-fg">
+      <header className="sticky top-0 z-20 border-b-2 border-ink bg-bg/95 px-3 pb-2 pt-[calc(env(safe-area-inset-top)+8px)] backdrop-blur">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -71,7 +71,7 @@ export function WorkoutPage() {
             <Icon name="x" className="h-6 w-6" />
           </button>
           <div className="min-w-0 flex-1">
-            <div className="truncate font-bold">{t.title(s.template.name)}</div>
+            <div className="truncate font-pop text-xl leading-tight">{t.title(s.template.name)}</div>
             <div className="text-xs text-muted">
               {t.progress(doneCount, items.length)} · {formatDuration(now - session.startedAt)}
             </div>
@@ -112,14 +112,14 @@ export function WorkoutPage() {
                   className="flex h-6 w-full items-center"
                 >
                   <span
-                    className={`h-1.5 w-full rounded-full transition-colors ${
+                    className={`h-3 w-full rounded-full border-2 transition-colors ${
                       i === index
-                        ? 'bg-accent'
+                        ? 'border-ink bg-pop'
                         : isDone(it)
-                          ? 'bg-success'
+                          ? 'border-ink bg-success'
                           : skipped.has(it.id)
-                            ? 'bg-border/50'
-                            : 'bg-border'
+                            ? 'border-ink/40 bg-surface-2/50'
+                            : 'border-ink/70 bg-surface-2'
                     }`}
                   />
                 </button>
@@ -150,7 +150,7 @@ export function WorkoutPage() {
       </main>
 
       {s.view === 'exercise' && (
-        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-xl border-t border-border/60 bg-bg/95 shadow-[0_-8px_24px_rgba(0,0,0,0.25)] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-xl border-t-2 border-ink bg-bg/95 shadow-[0_-8px_24px_rgba(0,0,0,0.25)] backdrop-blur">
           <RestTimer />
           <nav className="flex gap-2 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
             <button

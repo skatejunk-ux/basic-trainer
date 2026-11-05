@@ -3,7 +3,7 @@ import { BottomNav } from './BottomNav';
 
 export function AppShell() {
   return (
-    <div className="mx-auto flex h-full max-w-xl flex-col bg-bg text-fg">
+    <div className="pop-paper mx-auto flex h-full max-w-xl flex-col text-fg">
       <main className="flex-1 overflow-y-auto px-4 pb-6 pt-6">
         <Outlet />
       </main>

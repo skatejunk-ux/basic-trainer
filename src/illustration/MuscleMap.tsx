@@ -1,4 +1,6 @@
-// Cartoon-spierkaart: poppetje voor- en achteraanzicht met gekleurde spiergroepen (PLAN.md §8).
+// Cartoon-spierkaart in pop-art-stijl: poppetje voor- en achteraanzicht met gekleurde spiergroepen (PLAN.md §8).
+// Groot: twee comic-panelen met zonnestralen en Ben-Day-raster op de getrainde spieren.
+import { useId } from 'react';
 import type { MuscleId, MuscleMap as MuscleMapData } from '../types';
 import { nl } from '../content/nl';
 import { describeMuscleMap, MUSCLE_NAMES, muscleLevel, type MuscleLevel } from './muscles';
@@ -80,16 +82,84 @@ function Base() {
   );
 }
 
-function Muscles({ shapes, map }: { shapes: [MuscleId, string][]; map: MuscleMapData }) {
+function Muscles({ shapes, map, dots }: { shapes: [MuscleId, string][]; map: MuscleMapData; dots?: string }) {
   const paths = () =>
     shapes.map(([id, d]) => {
       const level = muscleLevel(map, id);
       return <path key={id} d={d} data-muscle={id} data-level={level} className={`mm-muscle mm-${fillFor(id, level)}`} />;
     });
+  // Ben-Day-raster over de getrainde spieren (alleen groot; klein wordt het ruis).
+  const raster = () =>
+    dots &&
+    shapes.map(([id, d]) => {
+      const level = muscleLevel(map, id);
+      return level === 'idle' ? null : <path key={id} d={d} className="mm-dots" fill={`url(#${dots}-${level})`} />;
+    });
   return (
     <g>
       {paths()}
-      <g transform={MIRROR}>{paths()}</g>
+      {raster()}
+      <g transform={MIRROR}>
+        {paths()}
+        {raster()}
+      </g>
+    </g>
+  );
+}
+
+/** Patronen voor het Ben-Day-raster en de zonnestralen van de panelen. */
+function PopDefs({ id }: { id: string }) {
+  const dot = (level: string, r: number) => (
+    <pattern id={`${id}-${level}`} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <circle cx="3.5" cy="3.5" r={r} className={`mm-dot-${level}`} />
+    </pattern>
+  );
+  return (
+    <defs>
+      {dot('primary', 1.7)}
+      {dot('secondary', 1.5)}
+      <pattern id={`${id}-bg`} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <circle cx="5" cy="5" r="1.8" className="mm-panel-dot" />
+      </pattern>
+      <clipPath id={`${id}-clip`}>
+        <rect x="4" y="4" width="192" height="440" rx="18" />
+      </clipPath>
+    </defs>
+  );
+}
+
+const RAYS = Array.from({ length: 14 }, (_, i) => {
+  const a0 = (i / 14) * Math.PI * 2;
+  const a1 = a0 + Math.PI / 14;
+  const r = 400;
+  const p = (a: number) => `${(100 + Math.cos(a) * r).toFixed(1)},${(210 + Math.sin(a) * r).toFixed(1)}`;
+  return `M100,210 L${p(a0)} L${p(a1)} Z`;
+}).join(' ');
+
+/** Comic-paneel achter een figuur: vlak, zonnestralen en stippen. */
+function Panel({ id }: { id: string }) {
+  return (
+    <g className="mm-panel">
+      <g clipPath={`url(#${id}-clip)`}>
+        <rect x="4" y="4" width="192" height="440" className="mm-panel-bg" />
+        <path d={RAYS} className="mm-panel-ray" />
+        <rect x="4" y="4" width="192" height="440" fill={`url(#${id}-bg)`} />
+      </g>
+      <rect x="4" y="4" width="192" height="440" rx="18" className="mm-panel-border" />
+    </g>
+  );
+}
+
+/** Geel vertellersvakje linksboven in het paneel ("VOOR"), over de tekening heen. */
+function Tag({ label }: { label: string }) {
+  const w = label.length * 12 + 18;
+  return (
+    <g className="mm-tag" transform="translate(10,12) rotate(-4)">
+      <rect x="3" y="3" width={w} height="28" rx="4" className="mm-tag-shadow" />
+      <rect width={w} height="28" rx="4" className="mm-tag-box" />
+      <text x={w / 2} y="21.5" textAnchor="middle">
+        {label}
+      </text>
     </g>
   );
 }
@@ -100,37 +170,59 @@ function fillFor(id: MuscleId, level: MuscleLevel): string {
   return level;
 }
 
-function FrontFigure({ map }: { map: MuscleMapData }) {
+/** Ben-Day-blosje: een rozetje kleine stipjes. */
+function Blush({ cx, cy }: { cx: number; cy: number }) {
+  const d = 3.6;
+  const h = d * 0.87;
+  const grid = [
+    [0, 0],
+    [d, 0],
+    [-d, 0],
+    [d / 2, h],
+    [-d / 2, h],
+    [d / 2, -h],
+    [-d / 2, -h],
+  ];
+  return (
+    <g className="mm-blush">
+      {grid.map(([x, y]) => (
+        <circle key={`${x},${y}`} cx={cx + x} cy={cy + y} r="1.4" />
+      ))}
+    </g>
+  );
+}
+
+function FrontFigure({ map, dots }: { map: MuscleMapData; dots?: string }) {
   return (
     <g>
       <Base />
       {/* sportbroekje */}
       <path d="M63,200 L137,200 L139,240 C122,242 108,246 100,252 C92,246 78,242 61,240 Z" className="mm-shorts" />
-      <Muscles shapes={FRONT} map={map} />
+      <Muscles shapes={FRONT} map={map} dots={dots} />
       {/* sixpack-lijntjes */}
       <path d="M86,154 L114,154 M86,176 L114,176 M100,132 L100,198" className="mm-detail" />
       {/* hoofd */}
       <circle cx="100" cy="40" r="30" className="mm-skin" />
       <path d="M69,40 C64,6 136,6 131,40 C126,28 114,22 100,24 C86,22 74,28 69,40 Z" className="mm-hair" />
-      <path d="M84,16 C92,12 104,12 112,15" className="mm-hair-shine" />
-      <path d="M83,33 Q89,30 95,33 M105,33 Q111,30 117,33" className="mm-face" />
-      <ellipse cx="89" cy="42" rx="3.5" ry="4.2" className="mm-eye" />
-      <ellipse cx="111" cy="42" rx="3.5" ry="4.2" className="mm-eye" />
-      <circle cx="90.3" cy="40.6" r="1.2" className="mm-eye-shine" />
-      <circle cx="112.3" cy="40.6" r="1.2" className="mm-eye-shine" />
-      <path d="M91,54 Q100,61 109,54" className="mm-face" />
-      <circle cx="81" cy="51" r="4.5" className="mm-cheek" />
-      <circle cx="119" cy="51" r="4.5" className="mm-cheek" />
+      <path d="M82,17 C90,12 104,12 113,16" className="mm-hair-shine" />
+      <path d="M82,33 Q89,28.5 96,32 M104,32 Q111,28.5 118,33" className="mm-brow" />
+      <ellipse cx="89" cy="42" rx="3.6" ry="4.6" className="mm-eye" />
+      <ellipse cx="111" cy="42" rx="3.6" ry="4.6" className="mm-eye" />
+      <circle cx="90.4" cy="40.4" r="1.3" className="mm-eye-shine" />
+      <circle cx="112.4" cy="40.4" r="1.3" className="mm-eye-shine" />
+      <path d="M90,53 Q100,62 110,53" className="mm-face" />
+      <Blush cx={80} cy={51} />
+      <Blush cx={120} cy={51} />
     </g>
   );
 }
 
-function BackFigure({ map }: { map: MuscleMapData }) {
+function BackFigure({ map, dots }: { map: MuscleMapData; dots?: string }) {
   return (
     <g>
       <Base />
       <path d="M63,200 L137,200 L139,240 C122,244 108,250 100,252 C92,250 78,244 61,240 Z" className="mm-shorts" />
-      <Muscles shapes={BACK} map={map} />
+      <Muscles shapes={BACK} map={map} dots={dots} />
       {/* ruggengraat */}
       <path d="M100,70 L100,198" className="mm-detail" />
       <circle cx="100" cy="40" r="30" className="mm-skin" />
@@ -144,29 +236,27 @@ function BackFigure({ map }: { map: MuscleMapData }) {
 
 export function MuscleMap({ map, size = 'lg', showLegend = size === 'lg', extraLabel, className = '' }: Props) {
   const t = nl.muscles;
+  const lg = size === 'lg';
+  // useId bevat dubbele punten; die zijn lastig in url(#…).
+  const id = `mm${useId().replace(/:/g, '')}`;
   const width = size === 'xs' ? 'w-[84px]' : size === 'sm' ? 'w-[120px]' : 'w-full max-w-[360px]';
   return (
-    <figure className={`muscle-map ${size === 'lg' ? 'mm-animate' : ''} ${className}`}>
+    <figure className={`muscle-map ${lg ? 'mm-animate mm-lg' : ''} ${className}`}>
       <svg
         viewBox="0 0 420 452"
         role="img"
         aria-label={`${t.label}. ${describeMuscleMap(map)}`}
         className={`${width} h-auto`}
       >
-        <FrontFigure map={map} />
+        {lg && <PopDefs id={id} />}
+        {lg && <Panel id={id} />}
+        <FrontFigure map={map} dots={lg ? id : undefined} />
+        {lg && <Tag label={t.front} />}
         <g transform="translate(220,0)">
-          <BackFigure map={map} />
+          {lg && <Panel id={id} />}
+          <BackFigure map={map} dots={lg ? id : undefined} />
+          {lg && <Tag label={t.back} />}
         </g>
-        {size === 'lg' && (
-          <g className="mm-caption">
-            <text x="100" y="446" textAnchor="middle">
-              {t.front}
-            </text>
-            <text x="320" y="446" textAnchor="middle">
-              {t.back}
-            </text>
-          </g>
-        )}
       </svg>
       {showLegend && (
         <figcaption className="mt-2 space-y-1 text-sm">
@@ -182,7 +272,7 @@ export function MuscleMap({ map, size = 'lg', showLegend = size === 'lg', extraL
 function LegendRow({ level, label, ids }: { level: 'primary' | 'secondary'; label: string; ids: MuscleId[] }) {
   return (
     <p className="flex items-start gap-2">
-      <span className={`mt-1 inline-block h-3 w-3 shrink-0 rounded-full mm-swatch-${level}`} aria-hidden />
+      <span className={`mt-1 inline-block h-3.5 w-3.5 shrink-0 rounded-full mm-swatch-${level}`} aria-hidden />
       <span>
         <span className="font-semibold">{label}:</span> {ids.map((id) => MUSCLE_NAMES[id]).join(', ')}
       </span>

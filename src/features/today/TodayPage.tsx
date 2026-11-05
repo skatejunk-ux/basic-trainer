@@ -16,6 +16,7 @@ import {
 } from '../../db';
 import { nl } from '../../content/nl';
 import { Icon } from '../../components/Icon';
+import { MiniCartoon } from '../../animation/MachineCartoon';
 import { useWorkout } from '../workout/store';
 import { capFirst, displayName, estimateMinutes, formatDuration, tonnage } from '../workout/plan';
 import { ScanButton } from '../scan/ScanButton';
@@ -131,12 +132,12 @@ export function TodayPage() {
                 {letterFmt.format(d.date)}
               </span>
               <span
-                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold tabular-nums ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-semibold tabular-nums ${
                   d.trained
-                    ? 'bg-accent text-accent-fg'
+                    ? 'animate-pop border-ink bg-accent text-accent-fg shadow-comic-sm'
                     : d.isToday
-                      ? 'border-2 border-accent/70 text-fg'
-                      : 'bg-surface-2 text-muted'
+                      ? 'border-ink bg-pop text-pop-fg'
+                      : 'border-transparent bg-surface-2 text-muted'
                 }`}
               >
                 {d.trained ? <Icon name="check" className="h-4 w-4" strokeWidth={3} /> : d.date.getDate()}
@@ -149,7 +150,7 @@ export function TodayPage() {
 
       {last && (
         <Link to={`/historie/${last.id}`} className="card flex items-center gap-3 p-4 active:bg-surface-2">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-lg font-bold text-accent">
+          <span className="pop-badge h-11 w-11 rotate-2 rounded-xl text-2xl">
             {templateName(last.templateId).slice(0, 2)}
           </span>
           <span className="min-w-0 flex-1">
@@ -206,21 +207,26 @@ function NextTraining({
   const template = data.templates.find((tp) => tp.id === (chosen ?? suggestedId)) ?? data.templates[0];
   if (!template) return null;
   const others = data.templates.filter((tp) => tp.id !== template.id);
+  // Eerste krachtoefening als bewegend comic-plaatje in de kop.
+  const star = template.items.map((i) => data.exercises[i.exerciseId]).find((e) => e && e.kind !== 'cardio');
   return (
     <div className="card relative overflow-hidden p-4">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-accent/15 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-pop-blue/25 to-transparent"
         aria-hidden
       />
       <div className="relative">
         <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-2xl font-extrabold text-accent-fg">
-            {template.name.slice(0, 2)}
-          </span>
-          <div className="min-w-0">
+          <span className="pop-badge h-12 w-12 text-3xl">{template.name.slice(0, 2)}</span>
+          <div className="min-w-0 flex-1">
             <p className="eyebrow">{t.next}</p>
-            <h2 className="truncate text-2xl font-bold">{nl.workout.title(template.name)}</h2>
+            <h2 className="truncate text-3xl">{nl.workout.title(template.name)}</h2>
           </div>
+          {star && (
+            <div className="shrink-0 rotate-2" aria-hidden>
+              <MiniCartoon exercise={star} />
+            </div>
+          )}
         </div>
         <p className="mt-3 flex items-center gap-3 text-sm text-muted">
           <span className="inline-flex items-center gap-1.5">

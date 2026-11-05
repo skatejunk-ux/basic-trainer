@@ -59,13 +59,17 @@ export function RestTimer() {
       role="timer"
       aria-live="polite"
       aria-label={t.label}
-      className={`border-t border-border px-4 pb-2 pt-3 ${over ? 'bg-success text-bg' : 'bg-surface-2'}`}
+      className={`border-t-2 border-ink px-4 pb-2 pt-3 ${over ? 'bg-pop text-pop-fg' : 'bg-surface-2'}`}
     >
-      <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-border">
+      <div className="mb-2 h-3.5 overflow-hidden rounded-full border-2 border-ink bg-surface">
         <div className="h-full bg-accent transition-[width] duration-200" style={{ width: `${pct}%` }} />
       </div>
       {over ? (
-        <button type="button" onClick={clearRest} className="min-h-touch w-full text-center text-xl font-bold">
+        <button
+          type="button"
+          onClick={clearRest}
+          className="animate-pop min-h-touch w-full text-center font-pop text-3xl tracking-wide"
+        >
           {t.over}
         </button>
       ) : (
@@ -74,7 +78,7 @@ export function RestTimer() {
             {t.minus}
           </button>
           <div className="flex-1 text-center">
-            <div className="text-xs uppercase tracking-wide text-muted">{t.label}</div>
+            <div className="eyebrow">{t.label}</div>
             <div className="text-4xl font-bold tabular-nums" data-testid="rest-remaining">
               {formatClock(remaining)}
             </div>
