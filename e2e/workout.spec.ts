@@ -90,6 +90,46 @@ test('volledige training A: loggen, rust, herstel na herladen, afronden', async 
   await expect(page.getByRole('heading', { name: 'Training B' })).toBeVisible();
 });
 
+test('gewicht en reps intypen in plaats van alleen −/+', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Start training A' }).click();
+  await page.getByRole('button', { name: /^2: / }).click();
+  await expect(page.getByRole('heading', { name: 'Seated Leg Press' })).toBeVisible();
+
+  // Komma en een eenheid erachter mogen
+  await page.getByLabel('Set 1 kg').fill('62,5 kg');
+  await page.getByLabel('Set 1 reps').fill('11');
+  await page.getByRole('button', { name: 'Set klaar: Set 1' }).click();
+  await expect(page.getByText('62,5 kg × 11')).toBeVisible();
+
+  // 0 reps of onzin: niet op te slaan
+  await page.getByRole('button', { name: 'Rust overslaan' }).click();
+  await page.getByLabel('Set 2 reps').fill('0');
+  await expect(page.getByRole('button', { name: 'Set klaar: Set 2' })).toBeDisabled();
+  await page.getByLabel('Set 2 reps').fill('abc');
+  await expect(page.getByRole('button', { name: 'Set klaar: Set 2' })).toBeDisabled();
+  // −/+ werken verder vanaf wat je typte
+  await page.getByLabel('Set 2 reps').fill('9');
+  await page.getByRole('button', { name: 'reps omhoog' }).nth(0).click();
+  await expect(page.getByLabel('Set 2 reps')).toHaveValue('10');
+});
+
+test('schema-waarden intypen: sets en rust', async ({ page }) => {
+  await page.goto('./#/schema');
+  await page.getByRole('link', { name: /Training A/ }).click();
+  await page.getByRole('button', { name: 'Aanpassen: Seated Leg Press' }).click();
+  const field = (name: string) => page.getByRole('textbox', { name, exact: true });
+  await field('Sets').fill('5');
+  await field('Rust (s)').fill('100');
+  // Buiten het bereik wordt begrensd (max 50 reps)
+  await field('Max reps').fill('80');
+  await field('Max reps').press('Enter');
+  await expect(field('Max reps')).toHaveValue('50');
+  await page.getByRole('button', { name: 'Klaar' }).click();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Aanpassen: Seated Leg Press' })).toContainText('5×6–50');
+});
+
 test('back extension vraagt eerst het type en onthoudt het', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Liever training B' }).click();

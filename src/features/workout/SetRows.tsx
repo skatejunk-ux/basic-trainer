@@ -1,8 +1,10 @@
-// Setrijen met grote −/+ knoppen voor gewicht en reps (PLAN.md §6.2).
+// Setrijen met grote −/+ knoppen voor gewicht en reps (PLAN.md §6.2); beide zijn ook intypbaar.
 import { useState } from 'react';
 import type { Feel, SetLog } from '../../types';
 import { formatKg, roundKg } from '../../coach';
 import { Icon } from '../../components/Icon';
+import { NumberInput } from '../../components/NumberInput';
+import { parseNumber } from '../../components/numberField';
 import { nl } from '../../content/nl';
 import { primeAudio } from './device';
 import type { PlannedRow } from './plan';
@@ -22,11 +24,12 @@ interface Props {
 
 export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo, onFeel }: Props) {
   const [weight, setWeight] = useState<string>(row.weightKg === null ? '' : formatKg(row.weightKg));
-  const [reps, setReps] = useState(row.reps);
+  const [reps, setReps] = useState(String(row.reps));
   const label = row.isWarmup ? t.warmup : `${t.set(row.setIndex)}${row.side ? ` · ${t.side[row.side]}` : ''}`;
-  const parsed = Number(weight.replace(',', '.'));
-  const valid =
-    weight.trim() !== '' && Number.isFinite(parsed) && (parsed > 0 || (allowZero && parsed === 0)) && reps > 0;
+  const parsed = parseNumber(weight);
+  const repCount = parseNumber(reps);
+  const validReps = repCount !== null && Number.isInteger(repCount) && repCount > 0 && repCount <= 999;
+  const valid = parsed !== null && parsed <= 999 && (parsed > 0 || (allowZero && parsed === 0)) && validReps;
 
   if (log) {
     return (
@@ -66,10 +69,9 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
     );
   }
 
-  const bump = (delta: number) => {
-    const base = Number.isFinite(parsed) && weight.trim() !== '' ? parsed : 0;
-    setWeight(formatKg(Math.max(0, roundKg(base + delta))));
-  };
+  const bump = (delta: number) => setWeight(formatKg(Math.max(0, roundKg((parsed ?? 0) + delta))));
+  const bumpReps = (delta: number) =>
+    setReps(String(Math.max(1, Math.round(repCount ?? row.reps) + delta)));
 
   return (
     <li
@@ -80,35 +82,43 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
       <div className="flex items-center gap-2">
         <Stepper
           label={t.weight}
+          className="flex-1"
           onMinus={() => bump(-step)}
           onPlus={() => bump(step)}
           input={
-            <input
-              inputMode="decimal"
+            <NumberInput
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              placeholder="–"
-              aria-label={`${label} ${t.weight}`}
-              className="w-full bg-transparent text-center text-xl font-semibold tabular-nums outline-none"
+              onChange={setWeight}
+              placeholder="?"
+              label={`${label} ${t.weight}`}
+              onBlur={() => parsed !== null && setWeight(formatKg(Math.max(0, roundKg(parsed))))}
+              className={`h-9 ${weight.length > 5 ? 'text-base' : weight.length > 4 ? 'text-lg' : 'text-xl'}`}
             />
           }
         />
         <Stepper
           label={t.reps}
-          onMinus={() => setReps((r) => Math.max(1, r - 1))}
-          onPlus={() => setReps((r) => r + 1)}
+          className="w-[104px] flex-none"
+          onMinus={() => bumpReps(-1)}
+          onPlus={() => bumpReps(1)}
           input={
-            <span className="block text-center text-xl font-semibold tabular-nums" aria-label={`${label} ${t.reps}`}>
-              {reps}
-            </span>
+            <NumberInput
+              value={reps}
+              onChange={setReps}
+              decimal={false}
+              label={`${label} ${t.reps}`}
+              onBlur={() => setReps(String(validReps ? repCount : row.reps))}
+              className="h-9 text-xl"
+            />
           }
         />
         <button
           type="button"
           disabled={!valid}
           onClick={() => {
+            if (!valid) return;
             primeAudio(soundEnabled);
-            onDone(parsed, reps);
+            onDone(roundKg(parsed!), repCount!);
           }}
           aria-label={`${t.done}: ${label}`}
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg shadow-accent/20 active:scale-95 disabled:opacity-30 disabled:shadow-none"
@@ -120,36 +130,39 @@ export function SetRow({ row, log, step, allowZero, soundEnabled, onDone, onUndo
   );
 }
 
+/** −/+ rond een invoervak; smalle knoppen zodat het getal ook op een 360 px-scherm past. */
 function Stepper({
   label,
   input,
+  className,
   onMinus,
   onPlus,
 }: {
   label: string;
   input: React.ReactNode;
+  className: string;
   onMinus: () => void;
   onPlus: () => void;
 }) {
   return (
-    <div className="flex min-w-0 flex-1 items-center rounded-xl bg-surface-2">
+    <div className={`flex min-w-0 items-center rounded-xl bg-surface-2 ${className}`}>
       <button
         type="button"
         onClick={onMinus}
         aria-label={t.minus(label)}
-        className="h-14 w-11 shrink-0 text-2xl text-muted"
+        className="h-14 w-[34px] shrink-0 text-2xl text-muted"
       >
         −
       </button>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 py-1">
         {input}
-        <div className="text-center text-[11px] uppercase tracking-wide text-muted">{label}</div>
+        <div className="mt-0.5 text-center text-[11px] uppercase tracking-wide text-muted">{label}</div>
       </div>
       <button
         type="button"
         onClick={onPlus}
         aria-label={t.plus(label)}
-        className="h-14 w-11 shrink-0 text-2xl text-muted"
+        className="h-14 w-[34px] shrink-0 text-2xl text-muted"
       >
         +
       </button>

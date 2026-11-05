@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { CardioLog, CardioPlan } from '../../types';
 import { formatKg } from '../../coach';
 import { Icon } from '../../components/Icon';
+import { NumberInput } from '../../components/NumberInput';
+import { parseNumber } from '../../components/numberField';
 import { nl } from '../../content/nl';
 import { beep, primeAudio, vibrate, VIBRATE_DONE } from './device';
 import { formatClock } from './plan';
@@ -27,7 +29,7 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
   const now = useNow(startedAt !== null, 500);
   const lastMark = useRef(0);
 
-  const target = Number(minutes) || plan.minutes;
+  const target = parseNumber(minutes) || plan.minutes;
   const elapsedSec = startedAt ? (now - startedAt) / 1000 : 0;
   const remaining = target * 60 - elapsedSec;
 
@@ -63,10 +65,14 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
     );
   }
 
-  const num = (v: string) => Number(v.replace(',', '.'));
+  // Leeg of onzin: dan het plan aanhouden.
+  const num = (v: string, fallback: number) => {
+    const n = parseNumber(v);
+    return n !== null && n >= 0 ? n : fallback;
+  };
   const save = () => {
-    const ran = startedAt ? Math.max(1, Math.round(elapsedSec / 60)) : target;
-    onLog({ inclinePct: num(incline), speedKmh: num(speed), minutes: ran });
+    const ran = startedAt ? Math.max(1, Math.round(elapsedSec / 60)) : Math.round(target);
+    onLog({ inclinePct: num(incline, plan.inclinePct), speedKmh: num(speed, plan.speedKmh), minutes: ran });
     setStartedAt(null);
   };
 
@@ -75,7 +81,7 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
       <div className="grid grid-cols-3 gap-2">
         <Field label={t.incline} value={incline} onChange={setIncline} />
         <Field label={t.speed} value={speed} onChange={setSpeed} />
-        <Field label={t.minutes} value={minutes} onChange={setMinutes} />
+        <Field label={t.minutes} value={minutes} onChange={setMinutes} decimal={false} />
       </div>
       {startedAt !== null && (
         <div className="rounded-xl bg-surface-2 p-4 text-center">
@@ -113,16 +119,23 @@ export function CardioCard({ plan, log, vibration, sound, onLog, onUndo }: Props
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({
+  label,
+  value,
+  onChange,
+  decimal = true,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  decimal?: boolean;
+}) {
   return (
-    <label className="block rounded-xl bg-surface-2 p-2 text-center">
-      <input
-        inputMode="decimal"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent text-center text-2xl font-semibold tabular-nums outline-none"
-      />
-      <span className="block text-[11px] uppercase tracking-wide text-muted">{label}</span>
-    </label>
+    <div className="rounded-xl bg-surface-2 p-2 text-center">
+      <NumberInput value={value} onChange={onChange} label={label} decimal={decimal} className="h-11 text-2xl" />
+      <span className="mt-1 block text-[11px] uppercase tracking-wide text-muted" aria-hidden>
+        {label}
+      </span>
+    </div>
   );
 }

@@ -376,6 +376,10 @@ h1 {
   .icon-btn {
     @apply inline-flex h-11 w-11 items-center justify-center rounded-full text-muted active:bg-surface-2;
   }
+  /* Intypbaar getal (gewicht, reps, …): duidelijk een vakje, licht geel op zodra je typt. */
+  .num-input {
+    @apply block w-full min-w-0 rounded-lg border-2 border-ink/25 bg-surface px-1 text-center font-semibold tabular-nums text-fg outline-none transition-colors placeholder:text-muted focus:border-ink focus:bg-pop/25;
+  }
   /* Comic-badge: geel vak met inktrand, licht gekanteld (bv. de letter van de training). */
   .pop-badge {
     @apply flex shrink-0 -rotate-3 items-center justify-center rounded-2xl border-2 border-ink bg-pop font-pop text-pop-fg shadow-comic-sm;
